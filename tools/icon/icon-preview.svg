@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="432" height="432">
+<defs><radialGradient id="bg" cx="50%" cy="44%" r="70%"><stop offset="0" stop-color="#7A1C14"/><stop offset="1" stop-color="#4E100B"/></radialGradient><clipPath id="mask"><circle cx="54" cy="54" r="54"/></clipPath></defs>
+<g clip-path="url(#mask)"><rect width="108" height="108" fill="url(#bg)"/>
+<path d="M17.50,54.00 a36.50,36.50 0 1,0 73.00,0 a36.50,36.50 0 1,0 -73.00,0 Z" stroke="#D9AE4E" stroke-opacity="0.2" stroke-width="1" fill="none"/>
+<g transform="translate(54.0 54.0) scale(0.86) translate(-54.0 -54.0)">
+<path d="M24.00,54.00 a30.00,30.00 0 1,0 60.00,0 a30.00,30.00 0 1,0 -60.00,0 Z" stroke="#D9AE4E" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+<path d="M32.50,54.00 a21.50,21.50 0 1,0 43.00,0 a21.50,21.50 0 1,0 -43.00,0 Z" stroke="#D9AE4E" stroke-width="2.0" stroke-linecap="round" fill="none"/>
+<path d="M43.00,54.00 a11.00,11.00 0 1,0 22.00,0 a11.00,11.00 0 1,0 -22.00,0 Z" stroke="#D9AE4E" stroke-width="2.0" stroke-linecap="round" fill="none"/>
+<path d="M54.00,43.00 L54.00,24.00 M65.00,54.00 L84.00,54.00 M54.00,65.00 L54.00,84.00 M43.00,54.00 L24.00,54.00" stroke="#D9AE4E" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<path d="M61.15,30.21 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M75.09,44.15 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M75.09,63.85 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M61.15,77.79 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M41.45,77.79 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M27.51,63.85 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M27.51,44.15 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M41.45,30.21 a2.70,2.70 0 1,0 5.40,0 a2.70,2.70 0 1,0 -5.40,0 Z" fill="#F2D27A"/>
+<path d="M63.79,42.51 a1.70,1.70 0 1,0 3.40,0 a1.70,1.70 0 1,0 -3.40,0 Z" fill="#D9AE4E"/>
+<path d="M63.79,65.49 a1.70,1.70 0 1,0 3.40,0 a1.70,1.70 0 1,0 -3.40,0 Z" fill="#D9AE4E"/>
+<path d="M40.81,65.49 a1.70,1.70 0 1,0 3.40,0 a1.70,1.70 0 1,0 -3.40,0 Z" fill="#D9AE4E"/>
+<path d="M40.81,42.51 a1.70,1.70 0 1,0 3.40,0 a1.70,1.70 0 1,0 -3.40,0 Z" fill="#D9AE4E"/>
+<path d="M48.00,54.00 a6.00,6.00 0 1,0 12.00,0 a6.00,6.00 0 1,0 -12.00,0 Z" fill="#D9AE4E"/>
+<path d="M53.10,50.00 h1.8 v3.1 h3.1 v1.8 h-3.1 v3.1 h-1.8 v-3.1 h-3.1 v-1.8 h3.1 Z" fill="#7A1C14"/>
+</g></g></svg>

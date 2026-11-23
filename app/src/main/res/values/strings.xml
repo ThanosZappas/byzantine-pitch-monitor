@@ -1,3 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Byzantine Pitch</string>
+    <string name="app_name">Byzantine Pitch Monitor</string>
+    <string name="settings">Settings</string>
+    <string name="scale">Scale</string>
+    <string name="hold">HOLD</string>
+    <string name="base_voice">Base =\nvoice</string>
+    <string name="reset">Reset</string>
+    <string name="recordings_list">Recordings list</string>
+    <string name="send">Send</string>
+    <string name="import_">Import</string>
+    <string name="default_">Default</string>
 </resources>

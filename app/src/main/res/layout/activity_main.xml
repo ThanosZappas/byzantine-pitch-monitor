@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:background="@color/bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingRight="4dp">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:letterSpacing="0.03"
+            android:singleLine="true"
+            android:text="@string/app_name"
+            android:textColor="@color/gold"
+            android:textSize="20dp" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_round_btn"
+            android:contentDescription="@string/settings"
+            android:padding="9dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_gear" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/bar_line" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <app.pitchmonitor.byz.PitchView
+            android:id="@+id/graph"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/btnHold"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_pressable"
+            android:gravity="center"
+            android:paddingLeft="6dp"
+            android:paddingRight="6dp"
+            android:text="@string/hold"
+            android:textColor="#ffaaaaaa"
+            android:textSize="16dp" />
+
+        <LinearLayout
+            android:id="@+id/transport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnStop"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_pressable"
+                android:contentDescription="Stop"
+                android:src="@drawable/ic_stop" />
+
+            <ImageButton
+                android:id="@+id/btnRecord"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_pressable"
+                android:contentDescription="Record"
+                android:src="@drawable/ic_record" />
+
+            <ImageButton
+                android:id="@+id/btnPlay"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_pressable"
+                android:contentDescription="Play"
+                android:src="@drawable/ic_play" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/bar_line" />
+
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/bar"
+        android:orientation="horizontal"
+        android:paddingLeft="4dp"
+        android:paddingTop="7dp"
+        android:paddingRight="4dp"
+        android:paddingBottom="7dp">
+
+        <TextView
+            android:id="@+id/btnScale"
+            style="@style/Chip"
+            android:layout_weight="2.3"
+            android:background="@drawable/bg_chip_scale"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:textColor="@color/gold"
+            android:textSize="12dp" />
+
+        <LinearLayout
+            android:id="@+id/baseControls"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="8.1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnBaseVoice"
+                style="@style/Chip"
+                android:layout_weight="1.45"
+                android:background="@drawable/bg_chip_accent"
+                android:contentDescription="Base = voice"
+                android:maxLines="2"
+                android:text="@string/base_voice"
+                android:textColor="#ffffd877"
+                android:textSize="11dp" />
+
+            <TextView
+                android:id="@+id/btnBaseReset"
+                style="@style/Chip"
+                android:layout_weight="1.25"
+                android:contentDescription="Back to the natural base"
+                android:text="@string/reset"
+                android:textColor="#ffeeeeee"
+                android:textSize="12dp" />
+
+            <TextView
+                android:id="@+id/btnDown1"
+                style="@style/Chip.Step"
+                android:contentDescription="Down 1 moria"
+                android:text="−1" />
+
+            <TextView
+                android:id="@+id/btnDown6"
+                style="@style/Chip.Step"
+                android:contentDescription="Down 6 moria"
+                android:text="−6" />
+
+            <TextView
+                android:id="@+id/baseDetails"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_weight="1.6"
+                android:background="@drawable/bg_info"
+                android:gravity="center"
+                android:textColor="#ffd8cfc0"
+                android:textSize="10.5dp" />
+
+            <TextView
+                android:id="@+id/btnUp6"
+                style="@style/Chip.Step"
+                android:contentDescription="Up 6 moria"
+                android:text="+6" />
+
+            <TextView
+                android:id="@+id/btnUp1"
+                style="@style/Chip.Step"
+                android:contentDescription="Up 1 moria"
+                android:text="+1" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

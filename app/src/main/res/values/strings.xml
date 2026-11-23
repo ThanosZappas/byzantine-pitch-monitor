@@ -163,7 +163,7 @@
     <string name="graph_colours">Graph colours</string>
     <string name="scale_colours">Scale degrees</string>
     <string name="scale_colours_desc">Lines of European scales</string>
-    <string name="chromatic_desc">Chromatic scale; C, G and D also colour the Byzantine lines</string>
+    <string name="chromatic_desc">Chromatic scale; C colours the Byzantine base line, D the other lines</string>
     <string name="reset_colours">Reset graph colours</string>
     <string name="reset_colours_desc">Back to this theme\'s colours</string>
     <string name="no_recordings_desc">Record with the red button on the graph, or import an audio file.</string>
@@ -192,4 +192,10 @@
     <string name="scheme_warm">Warm</string>
     <string name="graph_lock">Lock graph colours</string>
     <string name="graph_lock_desc">Keep these colours when the app colour changes.</string>
+    <string name="genre">Melody genre</string>
+    <string name="genre_desc">Base and dominant notes of a mode as in sticheraric or heirmologic melodies, where they differ (e.g. Δ\': Πα or Βου).</string>
+    <string name="genre_sticheraric">Sticheraric</string>
+    <string name="genre_heirmologic">Heirmologic</string>
+    <string name="highlight_dominants">Highlight dominant notes</string>
+    <string name="highlight_dominants_desc">Tint the δεσπόζοντες of the selected mode a little. Off: only the base stands out.</string>
 </resources>

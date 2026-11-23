@@ -24,6 +24,24 @@ class MusicTest {
         assertArrayEquals(intArrayOf(Byzantine.GA, Byzantine.DI, Byzantine.ZO), m.dominants)
     }
 
+    @Test fun genres() {
+        val d4 = Byzantine.mode("Ήχος Δ'")!!
+        assertEquals(Byzantine.PA, d4.baseFor(Genre.STICHERARIC))
+        assertEquals(Byzantine.VOU, d4.baseFor(Genre.HEIRMOLOGIC))
+        val g3 = Byzantine.mode("Ήχος Γ'")!!
+        assertArrayEquals(intArrayOf(Byzantine.GA, Byzantine.PA, Byzantine.KE), g3.dominants)
+        assertFalse(g3.genresDiffer)
+    }
+
+    @Test fun onlyBaseStandsOutByDefault() {
+        val m = Byzantine.mode("Ήχος Α'")!!
+        val g = ByzantineGrid(m, 0.0, Palette.DARK_CHROMATIC)
+        val colors = g.lines(-1.0, 1199.0).filter { !it.strong }.map { it.color }.toSet()
+        assertEquals(1, colors.size)
+        val hi = ByzantineGrid(m, 0.0, Palette.DARK_CHROMATIC, highlightDominants = true)
+        assertEquals(2, hi.lines(-1.0, 1199.0).filter { !it.strong }.map { it.color }.toSet().size)
+    }
+
     @Test fun scaleOrder() {
         val o = Catalog.ORDERED
         assertEquals("C Major", o[0])

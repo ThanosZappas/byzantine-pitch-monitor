@@ -114,10 +114,13 @@ class HubActivity : ThemedActivity() {
         topTitle = TextView(this).apply {
             textSize = 22f
             setTextColor(p.onSurface)
-            setPadding(px(8f), 0, 0, 0)
-            isSingleLine = true
+            setPadding(px(8f), 0, px(8f), 0)
+            maxLines = 1
+            gravity = Gravity.CENTER_VERTICAL
+            // Long titles (e.g. Greek "Ηχογραφήσεις") shrink to fit beside the button.
+            setAutoSizeTextTypeUniformWithConfiguration(16, 22, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         }
-        topBar.addView(topTitle, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+        topBar.addView(topTitle, LinearLayout.LayoutParams(0, px(48f), 1f))
         topAction = kit.button("", filled = false) {}.apply { minHeight = px(40f); insetTop = 0; insetBottom = 0 }
         topBar.addView(topAction, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, px(40f)).apply { marginEnd = px(8f) })
         selectionBar = buildSelectionBar()
@@ -343,6 +346,10 @@ class HubActivity : ThemedActivity() {
 
         k.section(c, getString(R.string.sec_notes))
         k.card(c).also { card ->
+            val genres = Genre.entries
+            k.segmentedRow(card, getString(R.string.genre), getString(R.string.genre_desc),
+                listOf(getString(R.string.genre_sticheraric), getString(R.string.genre_heirmologic)),
+                genres.indexOf(prefs.genre)) { prefs.genreName = genres[it].name }
             k.chipsRow(card, getString(R.string.note_name), getString(R.string.note_name_desc),
                 listOf(getString(R.string.names_english), getString(R.string.names_solfege), "ΝΗ, ΠΑ, ΒΟΥ…"), prefs.noteNames) { prefs.noteNames = it }
             val modes = listOf(Catalog.EU_ALL, Catalog.EU_C_MAJOR, Catalog.EU_NONE)
@@ -507,6 +514,9 @@ class HubActivity : ThemedActivity() {
                 if (prefs.graphScheme != schemes[it]) { prefs.resetColors(); prefs.graphScheme = schemes[it]; rebuild(PAGE_APPEARANCE) }
             }
             k.switchRow(card, getString(R.string.graph_lock), getString(R.string.graph_lock_desc), prefs.graphLock) { prefs.graphLock = it }
+            k.switchRow(card, getString(R.string.highlight_dominants), getString(R.string.highlight_dominants_desc), prefs.highlightDominants) {
+                prefs.highlightDominants = it
+            }
             colorRow(card, getString(R.string.color_pitch), "color_pitch", { prefs.colorPitch }) { prefs.colorPitch = it }
             colorRow(card, getString(R.string.color_beats), "color_beats", { prefs.colorBeats }) { prefs.colorBeats = it }
             colorRow(card, getString(R.string.color_metronome), "color_metronome", { prefs.colorMetronome }) { prefs.colorMetronome = it }

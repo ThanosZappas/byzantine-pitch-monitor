@@ -79,7 +79,25 @@ class Genus(val startDegree: Int, val startMoria: Int, val steps: IntArray) {
     }
 }
 
-class ByzMode(val title: String, val genus: Genus, val base: Int, val dominants: IntArray)
+/** Melody genre (είδος μέλους): a mode's base and dominant notes can differ between them. */
+enum class Genre { STICHERARIC, HEIRMOLOGIC }
+
+/**
+ * A mode: its genus, and its base (βάση) and dominant notes (δεσπόζοντες) for sticheraric melodies,
+ * with heirmologic values where they differ.
+ */
+class ByzMode(
+    val title: String,
+    val genus: Genus,
+    val base: Int,
+    val dominants: IntArray,
+    private val heirmBase: Int = base,
+    private val heirmDominants: IntArray = dominants,
+) {
+    fun baseFor(g: Genre) = if (g == Genre.HEIRMOLOGIC) heirmBase else base
+    fun dominantsFor(g: Genre) = if (g == Genre.HEIRMOLOGIC) heirmDominants else dominants
+    val genresDiffer: Boolean get() = heirmBase != base || !heirmDominants.contentEquals(dominants)
+}
 
 object Byzantine {
     const val NI = 0; const val PA = 1; const val VOU = 2; const val GA = 3
@@ -91,14 +109,16 @@ object Byzantine {
     const val NI_NATURAL_HZ = 261.6255653
 
     val MODES = listOf(
-        ByzMode("Ήχος Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, DI, GA)),
+        // Sources: Apostoliki Diakonia "Οι ήχοι" (Α', Γ', Δ', Πλ.Α', Πλ.Β', Πλ.Δ'), IEMA thesaurus (Α'),
+        // owner (Γ': dominants Πα, Κε). Β' and Βαρύς: not stated there; kept from 1.6.0.
+        ByzMode("Ήχος Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, GA), heirmDominants = intArrayOf(PA, DI)),
         ByzMode("Ήχος Β'", Genus.SOFT_CHROMATIC_NI, DI, intArrayOf(DI, NI, KE)),
-        ByzMode("Ήχος Γ'", Genus.ENHARMONIC_GA, GA, intArrayOf(GA, DI, NI)),
-        ByzMode("Ήχος Δ'", Genus.DIATONIC_NI, DI, intArrayOf(DI, PA, NI)),
-        ByzMode("Ήχος Πλ.Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, DI, KE)),
-        ByzMode("Ήχος Πλ.Β'", Genus.HARD_CHROMATIC_PA, PA, intArrayOf(PA, DI, KE)),
+        ByzMode("Ήχος Γ'", Genus.ENHARMONIC_GA, GA, intArrayOf(GA, PA, KE)),
+        ByzMode("Ήχος Δ'", Genus.DIATONIC_NI, PA, intArrayOf(PA, VOU, DI), heirmBase = VOU, heirmDominants = intArrayOf(VOU, DI)),
+        ByzMode("Ήχος Πλ.Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, DI, KE), heirmDominants = intArrayOf(KE, NI)),
+        ByzMode("Ήχος Πλ.Β'", Genus.HARD_CHROMATIC_PA, PA, intArrayOf(PA, DI, KE), heirmDominants = intArrayOf(VOU, DI)),
         ByzMode("Ήχος Βαρύς", Genus.ENHARMONIC_GA, GA, intArrayOf(GA, DI, ZO)),
-        ByzMode("Ήχος Πλ.Δ'", Genus.DIATONIC_NI, NI, intArrayOf(NI, GA, DI)),
+        ByzMode("Ήχος Πλ.Δ'", Genus.DIATONIC_NI, NI, intArrayOf(NI, VOU, DI)),
         ByzMode("Ήχος Πλ.Δ' εκ του Γα", Genus.DIATONIC_GA, GA, intArrayOf(GA, DI, ZO)),
     )
 
@@ -122,7 +142,14 @@ class ByzantineGrid(
     private val niCents: Double,
     private val chromatic: IntArray,
     private val labels: LabelColors = LabelColors.DARK,
+    private val genre: Genre = Genre.STICHERARIC,
+    /** Tint the mode's dominant notes slightly (otherwise only the base stands out). */
+    private val highlightDominants: Boolean = false,
 ) : Grid {
+    private val base = mode.baseFor(genre)
+    private val dominants = mode.dominantsFor(genre)
+    private val dominantColor = blendColor(chromatic[2], chromatic[0], 0.45f)
+
     override val showsMoria get() = true
     override val monoLabels get() = true
 
@@ -133,14 +160,14 @@ class ByzantineGrid(
         for (oct in first..last) for (d in 0 until 7) {
             val c = niCents + oct * 1200 + mode.genus.positions[d] * Pitch.CENTS_PER_MORIO
             if (c < low || c > high) continue
-            val base = d == mode.base
-            val dom = !base && mode.dominants.contains(d)
+            val base = d == this.base
+            val dom = highlightDominants && !base && dominants.contains(d)
             val color = when {
                 base -> chromatic[0]
-                dom -> chromatic[7]
+                dom -> dominantColor
                 else -> chromatic[2]
             }
-            val width = if (base) 1.3f else if (dom) 1.0f else 0.7f
+            val width = if (base) 1.3f else if (dom) 0.9f else 0.7f
             val name = Byzantine.NAMES[d]
             out += GridLine(c, name, name, color, width, if (base) labels.strong else labels.normal, base)
         }
@@ -309,4 +336,11 @@ object Catalog {
 
     /** Instrument transposition in semitones written above sounding: C, B♭, E♭, F. */
     val INSTRUMENT_SHIFT = intArrayOf(0, 2, 9, 7)
+}
+
+/** [a] moved towards [b] by [t] (plain ARGB maths, testable). */
+fun blendColor(a: Int, b: Int, t: Float): Int {
+    fun ch(c: Int, sh: Int) = (c shr sh) and 0xFF
+    fun mix(sh: Int) = (ch(a, sh) + (ch(b, sh) - ch(a, sh)) * t).toInt().coerceIn(0, 255)
+    return (0xFF shl 24) or (mix(16) shl 16) or (mix(8) shl 8) or mix(0)
 }

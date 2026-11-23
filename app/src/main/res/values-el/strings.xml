@@ -60,7 +60,7 @@
     <string name="tempo_short_heirmologic">Πολύ γοργή · Σύντ. ειρμολογικό</string>
     <string name="bpm">BPM</string>
     <string name="meter">Μέτρο</string>
-    <string name="meter_none">Κανένα</string>
+    <string name="meter_none">Χωρίς</string>
     <string name="button_display">Κουμπιά οθόνης</string>
     <string name="tempo_button">Ρυθμός</string>
     <string name="hide_transport">Απόκρυψη κουμπιών εγγραφής / αναπαραγωγής / διακοπής</string>
@@ -161,7 +161,7 @@
     <string name="graph_colours">Χρώματα γραφήματος</string>
     <string name="scale_colours">Βαθμίδες κλίμακας</string>
     <string name="scale_colours_desc">Γραμμές ευρωπαϊκών κλιμάκων</string>
-    <string name="chromatic_desc">Χρωματική κλίμακα· τα C, G, D χρωματίζουν και τις βυζαντινές γραμμές</string>
+    <string name="chromatic_desc">Χρωματική κλίμακα· το C χρωματίζει τη βυζαντινή βάση, το D τις άλλες γραμμές</string>
     <string name="reset_colours">Επαναφορά χρωμάτων γραφήματος</string>
     <string name="reset_colours_desc">Τα χρώματα αυτού του θέματος</string>
     <string name="no_recordings_desc">Ηχογραφήστε με το κόκκινο κουμπί στο γράφημα ή εισάγετε αρχείο ήχου.</string>
@@ -190,4 +190,10 @@
     <string name="scheme_warm">Ζεστός</string>
     <string name="graph_lock">Κλείδωμα χρωμάτων γραφήματος</string>
     <string name="graph_lock_desc">Να μένουν ίδια όταν αλλάζει το χρώμα εφαρμογής.</string>
+    <string name="genre">Είδος μέλους</string>
+    <string name="genre_desc">Βάση και δεσπόζοντες κάθε ήχου όπως στα στιχηραρικά ή στα ειρμολογικά, όπου διαφέρουν (π.χ. Δ\': Πα ή Βου).</string>
+    <string name="genre_sticheraric">Στιχηραρικό</string>
+    <string name="genre_heirmologic">Ειρμολογικό</string>
+    <string name="highlight_dominants">Επισήμανση δεσποζόντων</string>
+    <string name="highlight_dominants_desc">Ελαφρώς άλλο χρώμα στους δεσπόζοντες του ήχου. Ανενεργό: ξεχωρίζει μόνο η βάση.</string>
 </resources>

@@ -58,6 +58,9 @@ class Prefs(private val context: Context) {
     // Graph colour scheme: follows the app colour by default; locked keeps the current colours.
     var graphScheme by s("graph_scheme", Palette.GRAPH_APP)
     var graphLock by b("graph_lock", false)
+    var highlightDominants by b("highlight_dominants", false)
+    var genreName by s("genre", Genre.STICHERARIC.name)
+    val genre: Genre get() = Genre.entries.firstOrNull { it.name == genreName } ?: Genre.STICHERARIC
     fun graphDefaults(): GraphColors = palette().graph(graphScheme)
 
     /** Changes the app colour; with the graph locked, the graph keeps its current colours. */
@@ -179,7 +182,7 @@ class Prefs(private val context: Context) {
         val mode = Byzantine.mode(scale)
         val p = palette()
         val labels = LabelColors(p.labelStrong, p.label, p.labelFaint)
-        if (mode != null) return ByzantineGrid(mode, Byzantine.niCents(niOffset, a4), chromaticColors, labels)
+        if (mode != null) return ByzantineGrid(mode, Byzantine.niCents(niOffset, a4), chromaticColors, labels, genre, highlightDominants)
         val w = WesternScale.byTitle(scale) ?: WesternScale.ALL[0]
         return WesternGrid(w, a4, transpose, noteNames, octaveA3, semitoneLines, semitoneLabels, scaleColors, chromaticColors, labels)
     }
@@ -215,7 +218,7 @@ class Prefs(private val context: Context) {
         val PRESET_KEYS = listOf(
             "threshold", "h_zoom", "v_zoom", "auto_scroll", "scroll_speed", "show_tuner", "smoothing", "show_hz",
             "beat_lines", "blink", "bpm", "meter", "show_hold", "show_scale", "hide_transport", "note_names",
-            "european", "semitone_lines", "semitone_labels", "octave_a3", "a4", "instrument", "transpose_shift",
+            "european", "genre", "semitone_lines", "semitone_labels", "octave_a3", "a4", "instrument", "transpose_shift",
         )
 
         /** App colour swatches: gold, cyan, red, green, blue, purple, white. */

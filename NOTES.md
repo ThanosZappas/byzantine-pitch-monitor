@@ -111,6 +111,29 @@ predictive back animation, the email button.
   open the navigation panel (the middle of the right edge is excluded from the system Back gesture).
   Swipe right to close it.
 
+## Base and dominant notes (2026-11-23)
+
+- Only the **base** line has its own colour; all other lines share one colour.
+- **Highlight dominant notes** (Appearance → Graph colours, off by default) tints the δεσπόζοντες of
+  the selected mode slightly.
+- **Melody genre** (Settings → Notes and scales): Sticheraric (default) or Heirmologic. Where a mode
+  differs, its base and dominants follow the genre. Table (sticheraric / heirmologic):
+
+| Mode | Base | Dominants |
+| --- | --- | --- |
+| Α' | Πα | Πα Γα / Πα Δι |
+| Β' | Δι | Δι Νη Κε (not stated in the source; kept from 1.6.0) |
+| Γ' | Γα | Γα Πα Κε |
+| Δ' | Πα / Βου | Πα Βου Δι / Βου Δι |
+| Πλ.Α' | Πα | Πα Δι Κε / Κε Νη |
+| Πλ.Β' | Πα | Πα Δι Κε / Βου Δι |
+| Βαρύς | Γα | Γα Δι Ζω (not stated in the source; kept from 1.6.0) |
+| Πλ.Δ' | Νη | Νη Βου Δι |
+| Πλ.Δ' εκ του Γα | Γα | Γα Δι Ζω |
+
+  Sources: Apostoliki Diakonia, "Οι ήχοι"; IEMA thesaurus (Α'); the owner (Γ'). Δ' sticheraric now has
+  its base on Πα (1.6.0 had Δι, the papadic base). Please correct any value you sing differently.
+
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 
 Compared on the phone with the owner's 1.6.0 screenshots:

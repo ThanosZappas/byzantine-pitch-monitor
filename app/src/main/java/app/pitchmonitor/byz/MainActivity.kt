@@ -427,9 +427,10 @@ class MainActivity : ThemedActivity() {
             toast(getString(R.string.sing_base))
             return
         }
-        val shift = Byzantine.voiceShift(cents, mode.genus.positions[mode.base], prefs.a4)
+        val base = mode.baseFor(prefs.genre)
+        val shift = Byzantine.voiceShift(cents, mode.genus.positions[base], prefs.a4)
         setOffset(shift)
-        toast(getString(R.string.base_set, Byzantine.NAMES[mode.base], shift))
+        toast(getString(R.string.base_set, Byzantine.NAMES[base], shift))
     }
 
     // --- hold -----------------------------------------------------------------------------

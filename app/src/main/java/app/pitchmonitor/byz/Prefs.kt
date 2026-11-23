@@ -13,9 +13,9 @@ class Prefs(private val context: Context) {
     private fun s(key: String, def: String) = StringPref(key, def)
 
     // Detection and view
-    var threshold by f("threshold", 1.0f)          // 0..50, shown with two decimals
-    var hZoom by f("h_zoom", 1.0f)                  // 1..4
-    var vZoom by f("v_zoom", 1.0f)                  // 0.5..2
+    var threshold by f("threshold", 8.0f)          // 0..50, shown with two decimals
+    var hZoom by f("h_zoom", 1.5f)                  // 1..4
+    var vZoom by f("v_zoom", 1.6f)                  // 0.5..2
     var semitoneLines by b("semitone_lines", true)
     var semitoneLabels by b("semitone_labels", false)
     var octaveA3 by b("octave_a3", false)           // false: 440 Hz = A4
@@ -23,34 +23,34 @@ class Prefs(private val context: Context) {
     var instrument by i("instrument", 0)            // 0 C, 1 B♭, 2 E♭, 3 F
     var transposeShift by i("transpose_shift", 0)   // -12..12
     var autoScroll by b("auto_scroll", true)
-    var scrollSpeed by i("scroll_speed", 2)         // 1..10
+    var scrollSpeed by i("scroll_speed", 1)         // 1..10
     var showHz by b("show_hz", false)
-    var showTuner by b("show_tuner", true)
-    var smoothing by i("smoothing", 1)              // 1..5
-    var noteNames by i("note_names", 0)             // 0 C D E, 1 Do Re Mi, 2 ΝΗ ΠΑ ΒΟΥ
+    var showTuner by b("show_tuner", false)
+    var smoothing by i("smoothing", 3)              // 1..5
+    var noteNames by i("note_names", 1)             // 0 C D E, 1 Do Re Mi, 2 ΝΗ ΠΑ ΒΟΥ
 
     // Tempo
     var beatLines by b("beat_lines", false)
     var blink by b("blink", false)
-    var bpm by i("bpm", 120)                         // 20..260
+    var bpm by i("bpm", 92)                         // 20..260
     var meter by i("meter", 0)                       // 0 4/4, 1 3/4, 2 none
 
     // Buttons
-    var showHold by b("show_hold", true)
+    var showHold by b("show_hold", false)
     var showScale by b("show_scale", true)
-    var showTempo by b("show_tempo", true)
-    var hideTransport by b("hide_transport", false)
+    var showTempo by b("show_tempo", false)
+    var hideTransport by b("hide_transport", true)
 
     // Scale
-    var scale by s("scale", Catalog.C_MAJOR)
-    var european by s("european", Catalog.EU_ALL)
+    var scale by s("scale", "Ήχος Α'")
+    var european by s("european", Catalog.EU_C_MAJOR)
     var niOffset by i("ni_offset", 0)                // moria, -72..72
 
     // Look
     var theme by s("theme", Palette.DARK)
     var language by s("language", Lang.EN)
     var accent by i("accent", DEFAULT_ACCENT)
-    var scaleColorsOpen by b("scale_colors_open", true)
+    var scaleColorsOpen by b("scale_colors_open", false)
     var chromaticColorsOpen by b("chromatic_colors_open", false)
 
     fun palette(): Palette = Palette.of(context, theme, accent)
@@ -59,7 +59,7 @@ class Prefs(private val context: Context) {
     var graphScheme by s("graph_scheme", Palette.GRAPH_APP)
     var graphLock by b("graph_lock", false)
     var highlightDominants by b("highlight_dominants", true)
-    var genreName by s("genre", Genre.STICHERARIC.name)
+    var genreName by s("genre", Genre.HEIRMOLOGIC.name)
     val genre: Genre get() = Genre.entries.firstOrNull { it.name == genreName } ?: Genre.STICHERARIC
     fun graphDefaults(): GraphColors = palette().graph(graphScheme)
 

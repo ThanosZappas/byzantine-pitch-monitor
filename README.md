@@ -18,7 +18,7 @@ Requirements: JDK 17 and the Android SDK (platform 37). The Gradle wrapper is in
 ```
 
 The debug build installs as `app.pitchmonitor.byz.dev` ("Byzantine Pitch Monitor (dev)") so it
-can sit next to the 1.6.0 app; the release build uses `app.pitchmonitor.byz`, version 1.6.0 (37).
+can sit next to the 1.6.0 app; the release build uses `app.pitchmonitor.byz`, version 1.0.0 (1).
 
 ## What is where
 

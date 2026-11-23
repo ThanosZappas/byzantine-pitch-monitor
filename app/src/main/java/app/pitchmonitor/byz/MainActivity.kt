@@ -96,7 +96,7 @@ class MainActivity : ThemedActivity() {
         applyNavMode()
         setupSwipeToMenu()
         btnReset.maxLines = 1
-        btnReset.setAutoSizeTextTypeUniformWithConfiguration(7, 12, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+        androidx.core.widget.TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(btnReset, 7, 12, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         btnScale.setOnClickListener { pickScale() }
         findViewById<View>(R.id.btnDown1).setOnClickListener { setOffset(prefs.niOffset - 1) }
         findViewById<View>(R.id.btnDown6).setOnClickListener { setOffset(prefs.niOffset - 6) }

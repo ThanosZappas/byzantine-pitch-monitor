@@ -176,7 +176,7 @@ class Kit(private val a: ThemedActivity, private val p: Palette) {
                 // Whole words on one line: long labels shrink a little instead of being cut.
                 maxLines = 1
                 setPadding(px(4f), paddingTop, px(4f), paddingBottom)
-                setAutoSizeTextTypeUniformWithConfiguration(10, 14, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+                androidx.core.widget.TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, 10, 14, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
                 group.addView(this, LinearLayout.LayoutParams(0, px(44f), 1f))
             }.id
         }

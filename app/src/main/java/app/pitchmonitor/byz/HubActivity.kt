@@ -118,7 +118,7 @@ class HubActivity : ThemedActivity() {
             maxLines = 1
             gravity = Gravity.CENTER_VERTICAL
             // Long titles (e.g. Greek "Ηχογραφήσεις") shrink to fit beside the button.
-            setAutoSizeTextTypeUniformWithConfiguration(16, 22, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+            androidx.core.widget.TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, 16, 22, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         }
         topBar.addView(topTitle, LinearLayout.LayoutParams(0, px(48f), 1f))
         topAction = kit.button("", filled = false) {}.apply { minHeight = px(40f); insetTop = 0; insetBottom = 0 }

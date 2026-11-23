@@ -71,9 +71,9 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
     private val tracePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         strokeWidth = 1.2f * dp; strokeCap = Paint.Cap.ROUND; style = Paint.Style.STROKE
     }
-    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 11f * sp; textAlign = Paint.Align.RIGHT }
+    private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 13f * sp; textAlign = Paint.Align.RIGHT }
     private val moriaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 11f * sp; textAlign = Paint.Align.RIGHT; color = 0xFFB0B0B0.toInt()
+        textSize = 12f * sp; textAlign = Paint.Align.RIGHT; color = 0xFFB0B0B0.toInt()
     }
     private val axisPaint = Paint().apply { color = 0xFFC8C8C8.toInt(); strokeWidth = 1.2f * dp }
     private val tunerName = Paint(Paint.ANTI_ALIAS_FLAG).apply {

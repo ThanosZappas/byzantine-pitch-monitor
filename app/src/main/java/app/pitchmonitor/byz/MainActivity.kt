@@ -105,7 +105,7 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Debug builds only: lets screens be checked over adb on phones that block simulated taps.
-     * `--es scale "Ήχος Α'"`, `--ez demo true` (a synthetic voice instead of the microphone),
+     * `--es scale "Ήχος Α'"` or `--ei scaleIndex 1`, `--ez demo true` (a synthetic voice instead of the microphone),
      * `--es open settings|recordings`.
      */
     private var demo = false
@@ -113,6 +113,7 @@ class MainActivity : AppCompatActivity() {
     private fun debugExtras() {
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
         intent.getStringExtra("scale")?.let { if (Catalog.ORDERED.contains(it)) prefs.scale = it }
+        intent.getIntExtra("scaleIndex", -1).takeIf { it in Catalog.ORDERED.indices }?.let { prefs.scale = Catalog.ORDERED[it] }
         demo = intent.getBooleanExtra("demo", false)
         if (demo) Thread({ demoVoice() }, "demo-voice").start()
         when (intent.getStringExtra("open")) {

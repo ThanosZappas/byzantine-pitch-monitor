@@ -45,9 +45,23 @@ Each of these is my own implementation; tell me if the original behaved differen
 | Base box | "ΝΗ +nμ / f Hz" uses 261.6 Hz × 2^(n/72), without calibration, exactly like 1.6.0. |
 | Byzantine line widths and label colours | Chosen to match the screenshots (base line thicker and brighter). |
 
+## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
+
+Compared on the phone with the owner's 1.6.0 screenshots:
+
+- Main screen in Ήχος Α': top bar, axis labels, base line, moria steps, tuner ruler, HOLD,
+  bottom bar — match. Πλ.Δ' εκ του Γα shows Γα 12 Δι 10 Κε 8 Ζω 12 Νη 12 Πα 10 Βου 8 Γα.
+- Main screen in C Major: note labels, semitone lines, brighter C lines, full-width scale button — match.
+- Settings, all sections from Recordings to the colour lists: same options, order, values and
+  gold accent — match.
+- The microphone runs (MIC source, 44.1 kHz mono).
+
 ## Known differences / not verified
 
-- Screens have not yet been compared side by side on the phone (it was not connected while this
-  was written). See the git log for the verification commit.
+- Values in the screenshots (orange pitch colour, vertical zoom 1.53, hidden record buttons,
+  BPM 60…) were the owner's settings; a fresh install starts from the defaults above.
+- Not tried on the phone, because MIUI blocks simulated taps: tapping through the scale picker,
+  Base = voice with a real voice, recording, playback, Send, Import, rename/delete, the colour
+  picker. They are built and compile, but need a run by hand.
 - The original's exact scroll speed, zoom ranges and threshold scale are estimated from slider
   positions in the screenshots.

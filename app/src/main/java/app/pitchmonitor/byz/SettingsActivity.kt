@@ -81,6 +81,8 @@ class SettingsActivity : AppCompatActivity() {
                     text = label
                     isAllCaps = false
                     textSize = 16f
+                    maxLines = 1
+                    setPadding(px(4), paddingTop, px(4), paddingBottom)
                     setOnClickListener { finishWith(action) }
                 }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             }
@@ -117,7 +119,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val a4Value = TextView(this).apply { textSize = 16f; setTextColor(0xFFE0E0E0.toInt()) }
-        row(top = 10) {
+        row(left = 5, top = 10) {
             addView(headerText("Calibration"), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
             addView(label("A4 ="), LinearLayout.LayoutParams(px(80), ViewGroup.LayoutParams.WRAP_CONTENT))
             addView(a4Value, LinearLayout.LayoutParams(px(80), ViewGroup.LayoutParams.WRAP_CONTENT))

@@ -419,8 +419,8 @@ class MainActivity : ThemedActivity() {
         val genres = Genre.entries
         val currentGenre = Byzantine.mode(prefs.scale)?.genreFor(prefs.genre)
         var tab = currentGenre ?: prefs.genre
-        val head = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), px(4f), px(8f), 0) }
-        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), px(4f), px(8f), px(8f)) }
+        val head = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), 0, px(8f), 0) }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), 0, px(8f), px(4f)) }
         val scroll = android.widget.ScrollView(this).apply { addView(list) }
         lateinit var dlg: androidx.appcompat.app.AlertDialog
 
@@ -434,7 +434,9 @@ class MainActivity : ThemedActivity() {
                 val row = LinearLayout(this).apply {
                     orientation = LinearLayout.HORIZONTAL
                     gravity = android.view.Gravity.CENTER_VERTICAL
-                    setPadding(px(12f), px(12f), px(12f), px(12f))
+                    // Compact rows so all modes fit on screen without scrolling.
+                    setPadding(px(12f), px(5f), px(12f), px(5f))
+                    minimumHeight = px(36f)
                     background = android.graphics.drawable.RippleDrawable(
                         android.content.res.ColorStateList.valueOf(Colors.alpha(p.onSurface, 0.12f)),
                         if (isCurrent) p.rounded(p.secondaryContainer, 16f, d) else null, p.mask(16f, d))
@@ -451,14 +453,15 @@ class MainActivity : ThemedActivity() {
                 }, LinearLayout.LayoutParams(px(20f), px(20f)).apply { marginEnd = px(12f) })
                 row.addView(kit.titleText(Catalog.displayName(name, english)).apply {
                     setTextColor(if (isCurrent) p.onSecondaryContainer else p.onSurface)
+                    textSize = 15f
                 })
-                list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = px(2f) })
+                list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = px(1f) })
                 if (isCurrent) selectedRow = row
             }
             selectedRow?.let { r -> scroll.post { scroll.scrollTo(0, (r.top - px(80f)).coerceAtLeast(0)) } }
         }
 
-        kit.segmentedRow(head, getString(R.string.genre), null, genres.map { genreName(it) }, genres.indexOf(tab)) { i ->
+        kit.segmentedRow(head, "", null, genres.map { genreName(it) }, genres.indexOf(tab)) { i ->
             tab = genres[i]
             fill()
         }

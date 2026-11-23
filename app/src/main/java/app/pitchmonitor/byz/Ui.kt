@@ -158,7 +158,7 @@ class Kit(private val a: ThemedActivity, private val p: Palette) {
     /** Title + description + a row of joined buttons (one selected). Best for 2–4 short options. */
     fun segmentedRow(card: LinearLayout, title: CharSequence, desc: CharSequence?, options: List<String>, selected: Int, onSelect: (Int) -> Unit): MaterialButtonToggleGroup {
         val box = rowBox(vertical = true)
-        box.addView(texts(title, desc))
+        if (title.isNotEmpty()) box.addView(texts(title, desc)) else box.setPadding(px(16f), px(4f), px(16f), px(8f))
         val group = MaterialButtonToggleGroup(a).apply { isSingleSelection = true; isSelectionRequired = true }
         val ids = options.map { text ->
             MaterialButton(a, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
@@ -182,7 +182,7 @@ class Kit(private val a: ThemedActivity, private val p: Palette) {
         }
         if (selected in ids.indices) group.check(ids[selected])
         group.addOnButtonCheckedListener { _, id, isChecked -> if (isChecked) ids.indexOf(id).takeIf { it >= 0 }?.let(onSelect) }
-        box.addView(group, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = px(10f) })
+        box.addView(group, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = if (title.isNotEmpty()) px(10f) else 0 })
         card.addView(box)
         return group
     }

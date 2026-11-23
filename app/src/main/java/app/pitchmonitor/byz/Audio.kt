@@ -319,90 +319,114 @@ class Audio(val sampleRate: Int, val samples: ShortArray) {
             }
         }
 
-        /** Decodes any audio file Android can read into mono 16-bit samples. */
-        fun decode(context: Context, uri: Uri): Audio {
+        /**
+         * Decodes any audio file Android can read (mp3, m4a, ogg, wav…) into mono 16-bit samples.
+         * [progress] gets 0..1 and returns false to cancel (then this throws [CancelledException]).
+         */
+        fun decode(context: Context, uri: Uri, progress: (Float) -> Boolean = { true }): Audio {
             val ex = MediaExtractor()
             ex.setDataSource(context, uri, null)
             val trackIndex = (0 until ex.trackCount).firstOrNull {
                 ex.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true
-            } ?: error("No audio track")
+            } ?: run { ex.release(); error("The file has no audio") }
             ex.selectTrack(trackIndex)
             val inFormat = ex.getTrackFormat(trackIndex)
+            val durationUs = if (inFormat.containsKey(MediaFormat.KEY_DURATION)) inFormat.getLong(MediaFormat.KEY_DURATION) else 0L
             val codec = MediaCodec.createDecoderByType(inFormat.getString(MediaFormat.KEY_MIME)!!)
-            codec.configure(inFormat, null, null, 0)
-            codec.start()
             var rate = inFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
             var channels = inFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
             var float = false
-            val out = java.io.ByteArrayOutputStream()
-            val info = MediaCodec.BufferInfo()
-            var inputDone = false
-            var outputDone = false
-            while (!outputDone) {
-                if (!inputDone) {
-                    val i = codec.dequeueInputBuffer(10_000)
-                    if (i >= 0) {
-                        val buf = codec.getInputBuffer(i)!!
-                        val n = ex.readSampleData(buf, 0)
-                        if (n < 0) {
-                            codec.queueInputBuffer(i, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
-                            inputDone = true
-                        } else {
-                            codec.queueInputBuffer(i, 0, n, ex.sampleTime, 0)
-                            ex.advance()
+            var out = ShortArray(if (durationUs > 0) (durationUs * rate / 1_000_000 + rate).toInt().coerceAtMost(60_000_000) else rate * 60)
+            var n = 0
+            try {
+                codec.configure(inFormat, null, null, 0)
+                codec.start()
+                val info = MediaCodec.BufferInfo()
+                var inputDone = false
+                var outputDone = false
+                while (!outputDone) {
+                    if (!inputDone) {
+                        val i = codec.dequeueInputBuffer(10_000)
+                        if (i >= 0) {
+                            val buf = codec.getInputBuffer(i)!!
+                            val size = ex.readSampleData(buf, 0)
+                            if (size < 0) {
+                                codec.queueInputBuffer(i, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM)
+                                inputDone = true
+                            } else {
+                                codec.queueInputBuffer(i, 0, size, ex.sampleTime, 0)
+                                if (durationUs > 0 && !progress(ex.sampleTime.toFloat() / durationUs)) throw CancelledException()
+                                ex.advance()
+                            }
                         }
                     }
+                    val o = codec.dequeueOutputBuffer(info, 10_000)
+                    if (o >= 0) {
+                        val buf = codec.getOutputBuffer(o)!!.order(ByteOrder.LITTLE_ENDIAN)
+                        val bytesPer = if (float) 4 else 2
+                        val frames = info.size / (bytesPer * channels)
+                        if (n + frames > out.size) out = out.copyOf(maxOf(out.size * 3 / 2, n + frames))
+                        for (f in 0 until frames) {
+                            var sum = 0.0
+                            for (c in 0 until channels) {
+                                val at = info.offset + (f * channels + c) * bytesPer
+                                sum += if (float) buf.getFloat(at) * 32767.0 else buf.getShort(at).toDouble()
+                            }
+                            out[n++] = (sum / channels).coerceIn(-32768.0, 32767.0).toInt().toShort()
+                        }
+                        codec.releaseOutputBuffer(o, false)
+                        if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) outputDone = true
+                    } else if (o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                        val f = codec.outputFormat
+                        rate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+                        channels = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
+                        float = f.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
+                            f.getInteger(MediaFormat.KEY_PCM_ENCODING) == AudioFormat.ENCODING_PCM_FLOAT
+                    }
                 }
-                val o = codec.dequeueOutputBuffer(info, 10_000)
-                if (o >= 0) {
-                    val buf = codec.getOutputBuffer(o)!!
-                    buf.position(info.offset); buf.limit(info.offset + info.size)
-                    val bytes = ByteArray(info.size)
-                    buf.get(bytes)
-                    out.write(bytes)
-                    codec.releaseOutputBuffer(o, false)
-                    if (info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM != 0) outputDone = true
-                } else if (o == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                    val f = codec.outputFormat
-                    rate = f.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-                    channels = f.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
-                    float = f.containsKey(MediaFormat.KEY_PCM_ENCODING) &&
-                        f.getInteger(MediaFormat.KEY_PCM_ENCODING) == AudioFormat.ENCODING_PCM_FLOAT
-                }
+            } finally {
+                runCatching { codec.stop() }
+                codec.release()
+                ex.release()
             }
-            codec.stop(); codec.release(); ex.release()
-            val raw = ByteBuffer.wrap(out.toByteArray()).order(ByteOrder.LITTLE_ENDIAN)
-            val bytesPer = if (float) 4 else 2
-            val frames = raw.capacity() / (bytesPer * channels)
-            val mono = ShortArray(frames)
-            for (f in 0 until frames) {
-                var s = 0.0
-                for (c in 0 until channels) {
-                    val at = (f * channels + c) * bytesPer
-                    s += if (float) raw.getFloat(at) * 32767.0 else raw.getShort(at).toDouble()
-                }
-                mono[f] = (s / channels).coerceIn(-32768.0, 32767.0).toInt().toShort()
-            }
-            return Audio(rate, mono)
+            if (n == 0) error("No sound could be decoded from the file")
+            return Audio(rate, out.copyOf(n))
         }
     }
 }
 
-/** Pitch readings of a whole recording, at the same rate as live input. */
-fun analyseAudio(audio: Audio, threshold: Double): FloatArray {
-    val rate = audio.sampleRate
-    val hop = max(1, Math.round(rate / FRAMES_PER_SECOND).toInt())
+class CancelledException : Exception("Cancelled")
+
+/**
+ * Pitch readings of a whole recording, at the same rate as live input. The audio is first
+ * reduced to about 11 kHz (enough for voices up to ~1500 Hz), which makes songs analyse
+ * about 16 times faster. [progress] gets 0..1 and returns false to cancel.
+ */
+fun analyseAudio(audio: Audio, threshold: Double, progress: (Float) -> Boolean = { true }): FloatArray {
+    val factor = max(1, audio.sampleRate / 11025)
+    val rate = audio.sampleRate / factor
+    val src = audio.samples
+    val len = src.size / factor
+    val small = FloatArray(len)
+    for (k in 0 until len) {
+        var s = 0
+        val base = k * factor
+        for (j in 0 until factor) s += src[base + j]
+        small[k] = s / (factor * 32768f)
+    }
+    val hop = rate / FRAMES_PER_SECOND
     val size = max(256, Math.round(WINDOW.toDouble() * rate / SAMPLE_RATE).toInt())
     val det = PitchDetector(rate, size)
     val window = FloatArray(size)
-    val n = audio.samples.size / hop
+    val n = (len / hop).toInt()
     val out = FloatArray(n)
     for (k in 0 until n) {
-        val end = (k + 1) * hop
+        if (k % 200 == 0 && !progress(k.toFloat() / n)) throw CancelledException()
+        val end = Math.round((k + 1) * hop).toInt()
         val start = end - size
         for (i in 0 until size) {
             val j = start + i
-            window[i] = if (j >= 0 && j < audio.samples.size) audio.samples[j] / 32768f else 0f
+            window[i] = if (j >= 0 && j < len) small[j] else 0f
         }
         out[k] = AudioEngine.analyse(det, window, threshold)
     }

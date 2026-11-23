@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var graph: PitchView
     private lateinit var btnHold: TextView
+    private lateinit var btnLive: TextView
     private lateinit var btnScale: TextView
     private lateinit var baseControls: View
     private lateinit var baseDetails: TextView
@@ -74,6 +75,8 @@ class MainActivity : AppCompatActivity() {
 
         graph = findViewById(R.id.graph)
         btnHold = findViewById(R.id.btnHold)
+        btnLive = findViewById(R.id.btnLive)
+        btnLive.setOnClickListener { player?.stop(); showLive() }
         btnScale = findViewById(R.id.btnScale)
         baseControls = findViewById(R.id.baseControls)
         baseDetails = findViewById(R.id.baseDetails)
@@ -116,6 +119,7 @@ class MainActivity : AppCompatActivity() {
         intent.getIntExtra("scaleIndex", -1).takeIf { it in Catalog.ORDERED.indices }?.let { prefs.scale = Catalog.ORDERED[it] }
         demo = intent.getBooleanExtra("demo", false)
         if (demo) Thread({ demoVoice() }, "demo-voice").start()
+        intent.getStringExtra("importFile")?.let { importFrom(Uri.fromFile(File(it))) }
         when (intent.getStringExtra("open")) {
             "settings" -> openSettings()
             "recordings" -> openRecordings()
@@ -260,6 +264,7 @@ class MainActivity : AppCompatActivity() {
     // --- recordings -----------------------------------------------------------------------
 
     private fun refreshTransport() {
+        btnLive.visibility = if (showingRecording) View.VISIBLE else View.GONE
         val recording = engine.recording
         val playing = player != null
         btnRecord.isEnabled = !playing
@@ -334,30 +339,65 @@ class MainActivity : AppCompatActivity() {
         startInput()
     }
 
-    /** Analyses [file] and shows its pitch on the graph (held, at its end). */
-    private fun loadRecording(file: File, playAfter: Boolean = false) {
-        toast("Loading ${file.nameWithoutExtension}…")
-        val threshold = thresholdRms(prefs.threshold)
-        Thread {
+    /**
+     * Runs [work] on a background thread behind a progress dialog with Cancel. [work] gets a
+     * progress callback (0..1, returns false once cancelled). Errors are shown in a dialog and
+     * the graph goes back to the live voice.
+     */
+    private fun <T> withProgress(title: String, work: ((Float) -> Boolean) -> T, done: (T) -> Unit) {
+        val bar = android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply { max = 1000 }
+        val pad = (20 * resources.displayMetrics.density).toInt()
+        val box = android.widget.FrameLayout(this).apply { setPadding(pad, pad / 2, pad, 0); addView(bar) }
+        val cancelled = java.util.concurrent.atomic.AtomicBoolean(false)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(box)
+            .setCancelable(false)
+            .setNegativeButton(android.R.string.cancel) { _, _ -> cancelled.set(true) }
+            .show()
+        Thread({
             val result = runCatching {
-                val audio = Audio.readWav(file)
-                audio to analyseAudio(audio, threshold)
+                work { f -> runOnUiThread { bar.progress = (f * 1000).toInt() }; !cancelled.get() }
             }
             runOnUiThread {
-                result.onSuccess { (audio, frames) ->
-                    current = file
-                    currentAudio = audio
-                    showingRecording = true
-                    graph.track = PitchTrack.of(frames)
-                    graph.playbackFrame = null
-                    graph.held = false
-                    graph.held = true
-                    refreshHold()
-                    refreshTransport()
-                    if (playAfter) startPlayback(audio)
-                }.onFailure { toast("Could not open ${file.name}: ${it.message}") }
+                if (!isFinishing) runCatching { dialog.dismiss() }
+                result.onSuccess(done).onFailure { e ->
+                    if (e !is CancelledException) {
+                        showLive()
+                        AlertDialog.Builder(this).setTitle(R.string.app_name)
+                            .setMessage(getString(R.string.error_open, e.message ?: e.javaClass.simpleName))
+                            .setPositiveButton(android.R.string.ok, null).show()
+                    }
+                }
             }
-        }.start()
+        }, "load").start()
+    }
+
+    /** Analyses [file] and shows its pitch on the graph (held, at its end). */
+    private fun loadRecording(file: File, playAfter: Boolean = false) {
+        val threshold = thresholdRms(prefs.threshold)
+        withProgress(getString(R.string.loading, file.nameWithoutExtension), { progress ->
+            val audio = Audio.readWav(file)
+            audio to analyseAudio(audio, threshold, progress)
+        }) { (audio, frames) ->
+            if (frames.none { !it.isNaN() }) {
+                showLive()
+                AlertDialog.Builder(this).setMessage(R.string.no_pitch).setPositiveButton(android.R.string.ok, null).show()
+                return@withProgress
+            }
+            current = file
+            currentAudio = audio
+            showingRecording = true
+            graph.track = PitchTrack.of(frames)
+            graph.playbackFrame = null
+            graph.held = false
+            graph.held = true
+            // Centre on the end of the recording.
+            for (i in frames.indices.reversed()) if (!frames[i].isNaN()) { graph.centerCents = frames[i].toDouble(); break }
+            refreshHold()
+            refreshTransport()
+            if (playAfter) startPlayback(audio)
+        }
     }
 
     private fun openRecordings() {
@@ -371,26 +411,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun importFrom(uri: Uri) {
-        toast("Importing…")
         val name = displayName(uri)?.substringBeforeLast('.') ?: "import"
-        Thread {
-            val result = runCatching {
-                val audio = Audio.decode(this, uri)
-                val file = store.unique(name)
-                WavWriter.writeAll(file, audio.sampleRate, audio.samples)
-                file
-            }
-            runOnUiThread {
-                result.onSuccess { loadRecording(it) }.onFailure { toast("Could not import: ${it.message}") }
-            }
-        }.start()
+        withProgress(getString(R.string.importing, name), { progress ->
+            val audio = Audio.decode(this, uri, progress)
+            val file = store.unique(name)
+            WavWriter.writeAll(file, audio.sampleRate, audio.samples)
+            file
+        }) { loadRecording(it) }
     }
 
     private fun displayName(uri: Uri): String? = runCatching {
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
             if (c.moveToFirst()) c.getString(0) else null
         }
-    }.getOrNull()
+    }.getOrNull() ?: uri.lastPathSegment
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 

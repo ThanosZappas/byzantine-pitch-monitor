@@ -10,4 +10,9 @@
     <string name="send">Send</string>
     <string name="import_">Import</string>
     <string name="default_">Default</string>
+    <string name="loading">Loading %1$s…</string>
+    <string name="importing">Importing %1$s…</string>
+    <string name="error_open">Could not open the file.\n\n%1$s</string>
+    <string name="no_pitch">No pitch was found in this recording. Try a lower volume threshold in Settings.</string>
+    <string name="back_to_live">✕  Back to live</string>
 </resources>

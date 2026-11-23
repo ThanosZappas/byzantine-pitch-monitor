@@ -68,6 +68,35 @@ Each of these is my own implementation; tell me if the original behaved differen
 - **Language**: English (default) or Greek, independent of the phone's language. Scale names
   (C Major…) and chromatic note names stay in their international form.
 
+## Navigation and theming redesign (2026-11-23)
+
+**Colour roles.** All colours come from `Palette` (Theme.kt): Material 3-style roles (surface,
+surfaceContainer, onSurface, onSurfaceVariant, primary, onPrimary, primaryContainer,
+secondaryContainer, outline, outlineVariant) plus the graph and bar roles. They are built from the
+theme (Dark, Black, Light, Parchment, Follow the phone) and the app colour, and every text role is
+corrected to at least 4.5:1 and every control/graphic role to at least 3:1 (WCAG 2.1 AA).
+`ContrastTest` checks all 4 themes × 7 app colours × ~30 pairs. Colours the user picks for the pitch
+line and beats keep their hue but are adjusted until visible on the current graph background.
+No colour literals remain in layouts, drawables or screen code (swatch/preset lists are data).
+
+**Navigation.** Three top-level destinations: Settings, Appearance, Recordings (new icons).
+- Phones (< 600 dp wide): the menu button opens a side panel from the right with the three
+  destinations and a pinned footer (name, version, email).
+- Wide screens (≥ 600 dp, e.g. landscape or tablets): a permanent navigation rail on the right of
+  the main screen instead of the menu button.
+- Inside, the destinations share one screen with a navigation rail on the right (active indicator,
+  labels), animated page changes, and a footer pinned at the bottom. Content is capped at 720 dp
+  wide and centred on tablets.
+- Back stack: destinations are top-level, so switching does not stack; Back or the arrow returns to
+  the monitor; Back first clears a recordings selection. The open destination survives rotation.
+- Transitions: slide + fade in from the rail's side, fade + rise between destinations.
+
+**Settings redesign.** Grouped cards with section headers; Material switches, sliders, segmented
+buttons and choice chips, each with a one-line description; 4 dp spacing grid.
+
+Not yet verified on a device: landscape/tablet rail (only a phone in portrait was available),
+predictive back animation, the email button.
+
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 
 Compared on the phone with the owner's 1.6.0 screenshots:

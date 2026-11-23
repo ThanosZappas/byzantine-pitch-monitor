@@ -25,7 +25,6 @@ import android.widget.EditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import java.util.Locale
 
 /**
@@ -46,18 +45,18 @@ object ColorPicker {
      * theme's own colour.
      */
     fun show(
-        context: Context,
+        context: ThemedActivity,
         title: String,
         initial: Int,
         recent: List<Int>,
-        dark: Boolean,
         onDefault: (() -> Unit)? = null,
         onPick: (Int) -> Unit,
     ) {
+        val p = context.palette
         val dp = context.resources.displayMetrics.density
         fun px(v: Float) = (v * dp).toInt()
         val hsv = FloatArray(3).also { Color.colorToHSV(initial, it) }
-        val muted = if (dark) 0xFFAAAAAA.toInt() else 0xFF666666.toInt()
+        val muted = p.onSurfaceVariant
 
         val box = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -73,7 +72,7 @@ object ColorPicker {
         preview.addView(newSwatch, LinearLayout.LayoutParams(0, px(40f), 1f))
         box.addView(preview)
 
-        val sv = SatValView(context)
+        val sv = SatValView(context).apply { ring = p.onSurface }
         val hue = HueView(context)
         box.addView(sv, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(190f)).apply { topMargin = px(14f) })
         box.addView(hue, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(30f)).apply { topMargin = px(14f) })
@@ -83,6 +82,7 @@ object ColorPicker {
         hexRow.addView(TextView(context).apply { text = "#"; textSize = 18f; setTextColor(muted) })
         val hex = EditText(context).apply {
             textSize = 18f
+            setTextColor(p.onSurface)
             typeface = Typeface.MONOSPACE
             isSingleLine = true
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
@@ -101,7 +101,7 @@ object ColorPicker {
                 row.addView(View(context).apply {
                     background = GradientDrawable().apply {
                         shape = GradientDrawable.OVAL; setColor(c)
-                        setStroke(px(1f), if (dark) 0x66FFFFFF else 0x44000000)
+                        setStroke(px(1f), p.outline)
                     }
                     contentDescription = String.format(Locale.US, "#%06X", c and 0xFFFFFF)
                     setOnClickListener { setAll(c) }
@@ -139,13 +139,15 @@ object ColorPicker {
         })
         refresh()
 
-        val b = AlertDialog.Builder(context)
+        val b = context.dialog()
             .setTitle(title)
             .setView(android.widget.ScrollView(context).apply { addView(box) })
             .setPositiveButton(android.R.string.ok) { _, _ -> onPick(current) }
             .setNegativeButton(android.R.string.cancel, null)
         if (onDefault != null) b.setNeutralButton(R.string.default_color) { _, _ -> onDefault() }
-        b.show()
+        val d = b.show()
+        context.style(d)
+        context.tintTree(hex)
     }
 
     private var setAllRef: ((Int) -> Unit)? = null
@@ -160,6 +162,8 @@ object ColorPicker {
     private class SatValView(context: Context) : View(context) {
         var hue = 0f; var sat = 0f; var value = 0f
         var onChange: ((Float, Float) -> Unit)? = null
+        /** Outer ring of the thumb, from the theme. */
+        var ring = Color.BLACK
         private val dp = resources.displayMetrics.density
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val thumb = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = 2.5f * dp }
@@ -175,8 +179,9 @@ object ColorPicker {
             paint.shader = ComposeShader(horizontal, vertical, PorterDuff.Mode.SRC_OVER)
             canvas.drawRoundRect(rect, 12 * dp, 12 * dp, paint)
             val x = sat * w; val y = (1 - value) * h
-            thumb.color = Color.BLACK; canvas.drawCircle(x, y, 11 * dp, thumb)
-            thumb.color = Color.WHITE; canvas.drawCircle(x, y, 9 * dp, thumb)
+            // Two rings (theme outline + the picked colour's best contrast) keep the thumb visible on any colour.
+            thumb.color = ring; canvas.drawCircle(x, y, 11 * dp, thumb)
+            thumb.color = Colors.on(Color.HSVToColor(floatArrayOf(hue, sat, value))); canvas.drawCircle(x, y, 9 * dp, thumb)
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -207,7 +212,7 @@ object ColorPicker {
             val x = r + hue / 360f * (w - 2 * r)
             fill.color = Color.HSVToColor(floatArrayOf(hue, 1f, 1f))
             canvas.drawCircle(x, h / 2, r - 2 * dp, fill)
-            thumb.color = Color.WHITE; canvas.drawCircle(x, h / 2, r - 2 * dp, thumb)
+            thumb.color = Colors.on(fill.color); canvas.drawCircle(x, h / 2, r - 2 * dp, thumb)
         }
 
         @SuppressLint("ClickableViewAccessibility")

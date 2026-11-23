@@ -1,36 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Byz.Main" parent="Theme.AppCompat.NoActionBar">
+    <!-- Base themes. All colours are applied at runtime from Palette (Theme.kt), which follows
+         the chosen theme and app colour and checks WCAG AA contrast. -->
+    <style name="Theme.Byz" parent="Theme.Material3.Dark.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
-        <item name="colorAccent">@color/gold</item>
     </style>
-    <style name="Theme.Byz.Main.Light" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorAccent">#ff8d6f29</item>
+    <style name="Theme.Byz.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
-    <style name="Theme.Byz.Settings.Light" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorAccent">#ff8d6f29</item>
-    </style>
-    <style name="Theme.Byz.Settings" parent="Theme.AppCompat">
-        <item name="colorAccent">@color/gold</item>
-        <item name="android:statusBarColor">@android:color/black</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
-    </style>
-    <!-- A rounded button of the bottom bar. -->
+    <!-- A rounded button of the main screen's bottom bar (colours set in code). -->
     <style name="Chip">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_marginLeft">2dp</item>
         <item name="android:layout_marginRight">2dp</item>
-        <item name="android:background">@drawable/bg_chip</item>
         <item name="android:gravity">center</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
     <style name="Chip.Step">
         <item name="android:layout_weight">1</item>
-        <item name="android:textColor">@color/gold</item>
         <item name="android:textSize">15dp</item>
     </style>
 </resources>

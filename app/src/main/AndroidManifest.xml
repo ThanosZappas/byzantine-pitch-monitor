@@ -9,7 +9,7 @@
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_label"
-        android:theme="@style/Theme.Byz.Main">
+        android:theme="@style/Theme.Byz">
 
         <activity
             android:name=".MainActivity"
@@ -21,13 +21,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SettingsActivity"
-            android:label="@string/settings"
-            android:theme="@style/Theme.Byz.Settings" />
-        <activity
-            android:name=".RecordingsActivity"
-            android:label="@string/recordings_list"
-            android:theme="@style/Theme.Byz.Settings" />
+            android:name=".HubActivity"
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

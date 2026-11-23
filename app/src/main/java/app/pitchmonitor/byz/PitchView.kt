@@ -73,23 +73,24 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = 13f * sp; textAlign = Paint.Align.RIGHT }
     private val moriaPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 12f * sp; textAlign = Paint.Align.RIGHT; color = 0xFFB0B0B0.toInt()
+        textSize = 12f * sp; textAlign = Paint.Align.RIGHT
     }
-    private val axisPaint = Paint().apply { color = 0xFFC8C8C8.toInt(); strokeWidth = 1.2f * dp }
+    private val axisPaint = Paint().apply { strokeWidth = 1.2f * dp }
     private val tunerName = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 26f * sp; color = Color.WHITE; textAlign = Paint.Align.CENTER
+        textSize = 26f * sp; textAlign = Paint.Align.CENTER
     }
-    private val tunerTick = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFFCCCCCC.toInt(); strokeWidth = 0.8f * dp }
+    private val tunerTick = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeWidth = 0.8f * dp }
     private val tunerLabel = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 12f * sp; color = 0xFFCCCCCC.toInt(); textAlign = Paint.Align.CENTER
+        textSize = 12f * sp; textAlign = Paint.Align.CENTER
     }
     private val hzPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = 15f * sp; color = 0xFFCCCCCC.toInt(); textAlign = Paint.Align.RIGHT
+        textSize = 15f * sp; textAlign = Paint.Align.RIGHT
     }
     private val fillPaint = Paint()
+    private var bg = 0
+    private var markerColor = 0
     private val marker = Path()
 
-    private var bg = Color.BLACK
 
     /** Applies a theme's graph colours. */
     fun setPalette(p: Palette) {
@@ -103,13 +104,13 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
         hzPaint.color = p.tick
         markerColor = p.tuner
     }
-    private var markerColor = Color.WHITE
 
     private val pxPerCent get() = 0.22f * dp * vZoom
     private val pxPerFrame get() = (40f * dp * hZoom / FRAMES_PER_SECOND).toFloat()
 
     init {
-        setBackgroundColor(Color.BLACK)
+        // Replaced by the screen's own palette in MainActivity.applyPalette().
+        setPalette(Palette.of(Palette.DARK, Prefs.DEFAULT_ACCENT, true))
     }
 
     override fun onAttachedToWindow() {

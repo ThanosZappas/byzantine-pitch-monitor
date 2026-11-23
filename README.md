@@ -29,8 +29,10 @@ can sit next to the 1.6.0 app; the release build uses `app.pitchmonitor.byz`, ve
 | Pitch detector (YIN), microphone, WAV files, import, playback | `Audio.kt` |
 | The pitch graph, tuner, beat lines, gestures | `PitchView.kt` |
 | Main screen: bars, base controls, HOLD, record / play / stop | `MainActivity.kt`, `res/layout/activity_main.xml` |
-| Settings screen and colour picker | `SettingsActivity.kt` |
-| Recordings list | `RecordingsActivity.kt` |
+| Settings, Appearance and Recordings with the right navigation rail | `HubActivity.kt` |
+| Card/switch/slider building blocks | `Ui.kt` |
+| Colour roles, contrast checks, themes, language | `Theme.kt` |
+| Colour picker | `ColorPicker.kt` |
 
 ## Debug launch options
 
@@ -43,7 +45,7 @@ adb shell am start -n app.pitchmonitor.byz.dev/app.pitchmonitor.byz.MainActivity
 
 - `demo` feeds a synthetic voice instead of the microphone.
 - `scale` picks a scale by name, `scaleIndex` by its place in the list (0 = C Major, 1 = Ήχος Α').
-- `open settings|recordings` opens that screen; `scrollTo` scrolls Settings down (dp); `picker` opens the colour picker.
+- `open settings|appearance|recordings|menu` opens that screen (`selectAll` selects every recording); `scrollTo` scrolls Settings down (dp); `picker` opens the colour picker.
 - `theme light|dark|black|parchment|system`, `lang en|el`, `accent 0..6` change the look.
 - `importFile <path>` imports an audio file the app can read.
 

@@ -9,21 +9,20 @@ import android.os.Bundle
 import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import java.io.File
 import java.util.Locale
 import kotlin.math.pow
 
 class MainActivity : ThemedActivity() {
-    override val fullScreen = true
+    override val systemBarColor: Int get() = palette.bar
     private lateinit var store: RecordingStore
     private val liveTrack = PitchTrack()
     private val engine = AudioEngine(liveTrack)
@@ -50,16 +49,11 @@ class MainActivity : ThemedActivity() {
         if (ok) startInput() else toast(getString(R.string.mic_needed))
     }
 
-    private val settingsResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        when (r.data?.getStringExtra(SettingsActivity.EXTRA_ACTION)) {
-            SettingsActivity.ACTION_LIST -> openRecordings()
-            SettingsActivity.ACTION_SEND -> sendCurrent()
-            SettingsActivity.ACTION_IMPORT -> importAudio.launch(arrayOf("audio/*"))
-        }
-    }
-
-    private val recordingsResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        r.data?.getStringExtra(RecordingsActivity.EXTRA_FILE)?.let { loadRecording(File(it)) }
+    /** Results from Settings / Appearance / Recordings: open a recording or import one. */
+    private val hubResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+        val data = r.data ?: return@registerForActivityResult
+        data.getStringExtra(HubActivity.EXTRA_FILE)?.let { loadRecording(File(it)) }
+        if (data.getStringExtra(HubActivity.EXTRA_ACTION) == HubActivity.ACTION_IMPORT) importAudio.launch(arrayOf("audio/*"))
     }
 
     private val importAudio = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -92,7 +86,14 @@ class MainActivity : ThemedActivity() {
         graph.onZoom = { h, v -> prefs.hZoom = h; prefs.vZoom = v }
         graph.centerCents = Byzantine.niCents(prefs.niOffset, prefs.a4) + 600
 
-        findViewById<View>(R.id.btnSettings).setOnClickListener { openSettings() }
+        findViewById<View>(R.id.btnMenu).setOnClickListener { openMenu() }
+        findViewById<com.google.android.material.navigationrail.NavigationRailView>(R.id.mainRail).apply {
+            inflateMenu(R.menu.nav)
+            labelVisibilityMode = com.google.android.material.navigationrail.NavigationRailView.LABEL_VISIBILITY_LABELED
+            menuGravity = android.view.Gravity.CENTER
+            setOnItemSelectedListener { openHub(pageOf(it.itemId)); false }
+        }
+        applyNavMode()
         btnScale.setOnClickListener { pickScale() }
         findViewById<View>(R.id.btnDown1).setOnClickListener { setOffset(prefs.niOffset - 1) }
         findViewById<View>(R.id.btnDown6).setOnClickListener { setOffset(prefs.niOffset - 6) }
@@ -131,8 +132,10 @@ class MainActivity : ThemedActivity() {
         if (demo) Thread({ demoVoice() }, "demo-voice").start()
         intent.getStringExtra("importFile")?.let { importFrom(Uri.fromFile(File(it))) }
         when (intent.getStringExtra("open")) {
-            "settings" -> openSettings()
-            "recordings" -> openRecordings()
+            "settings" -> openHub(HubActivity.PAGE_SETTINGS)
+            "appearance" -> openHub(HubActivity.PAGE_APPEARANCE)
+            "recordings" -> openHub(HubActivity.PAGE_RECORDINGS)
+            "menu" -> openMenu()
         }
     }
 
@@ -184,7 +187,9 @@ class MainActivity : ThemedActivity() {
         graph.hZoom = prefs.hZoom
         graph.vZoom = prefs.vZoom
         graph.style = GraphStyle(
-            pitchColor = prefs.colorPitch, beatsColor = prefs.colorBeats, metronomeColor = prefs.colorMetronome,
+            // Picked colours keep their hue but are darkened/lightened until visible (3:1) on this theme's graph.
+            pitchColor = Colors.ensure(prefs.colorPitch, Colors.AA_UI, palette.graphBg),
+            beatsColor = Colors.ensure(prefs.colorBeats, 1.5, palette.graphBg), metronomeColor = prefs.colorMetronome,
             beatLines = prefs.beatLines, blink = prefs.blink, bpm = prefs.bpm, meter = prefs.meter,
             showTuner = prefs.showTuner, showHz = prefs.showHz, smoothing = prefs.smoothing,
             autoScroll = prefs.autoScroll, scrollSpeed = prefs.scrollSpeed,
@@ -206,15 +211,22 @@ class MainActivity : ThemedActivity() {
         findViewById<View>(R.id.lineTop).setBackgroundColor(p.barLine)
         findViewById<View>(R.id.lineBottom).setBackgroundColor(p.barLine)
         findViewById<TextView>(R.id.title).setTextColor(p.accentText)
-        findViewById<ImageButton>(R.id.btnSettings).apply {
-            setColorFilter(p.accentText)
-            background = android.graphics.drawable.StateListDrawable().apply {
-                addState(intArrayOf(android.R.attr.state_pressed), android.graphics.drawable.GradientDrawable().apply {
-                    shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(p.chipPressed)
-                })
-            }
+        findViewById<View>(R.id.root).setBackgroundColor(p.bar)
+        findViewById<ImageButton>(R.id.btnMenu).apply {
+            imageTintList = android.content.res.ColorStateList.valueOf(p.accentText)
+            background = p.ripple(android.graphics.drawable.ShapeDrawable(android.graphics.drawable.shapes.OvalShape()))
+        }
+        findViewById<View>(R.id.railLine).setBackgroundColor(p.outlineVariant)
+        findViewById<com.google.android.material.navigationrail.NavigationRailView>(R.id.mainRail).apply {
+            setBackgroundColor(p.bar)
+            HubActivity.styleRail(this, p, checkable = false)
         }
         graph.setPalette(p)
+        btnHold.background = p.ripple(p.mask(6f, d))
+        btnStop.imageTintList = android.content.res.ColorStateList.valueOf(p.stop)
+        btnRecord.imageTintList = android.content.res.ColorStateList.valueOf(p.record)
+        btnPlay.imageTintList = android.content.res.ColorStateList.valueOf(p.play)
+        for (b in listOf(btnStop, btnRecord, btnPlay)) b.background = p.ripple(android.graphics.drawable.ShapeDrawable(android.graphics.drawable.shapes.OvalShape()))
         val scaleStroke = Palette.blend(p.accent, p.bar, if (p.dark) 0.4f else 0.3f)
         btnScale.background = p.chip(stroke = scaleStroke, dp = d)
         btnScale.setTextColor(p.accentText)
@@ -234,21 +246,115 @@ class MainActivity : ThemedActivity() {
         refreshHold()
     }
 
-    private fun openSettings() {
-        settingsResult.launch(Intent(this, SettingsActivity::class.java).putExtra("scrollTo", intent.getIntExtra("scrollTo", 0))
-            .putExtra("picker", intent.getBooleanExtra("picker", false)))
+    // --- navigation -------------------------------------------------------------------------
+
+    private fun pageOf(itemId: Int) = when (itemId) {
+        R.id.nav_appearance -> HubActivity.PAGE_APPEARANCE
+        R.id.nav_recordings -> HubActivity.PAGE_RECORDINGS
+        else -> HubActivity.PAGE_SETTINGS
+    }
+
+    /** Opens a destination with a slide-in from the right (the rail's side). */
+    private fun openHub(page: String) {
+        val i = Intent(this, HubActivity::class.java).putExtra(HubActivity.EXTRA_PAGE, page)
+        for (k in listOf("scrollTo", "picker", "selectAll")) intent.extras?.get(k)?.let { v ->
+            when (v) { is Int -> i.putExtra(k, v); is Boolean -> i.putExtra(k, v) }
+        }
+        hubResult.launch(i, androidx.core.app.ActivityOptionsCompat.makeCustomAnimation(this, R.anim.nav_enter, R.anim.nav_hold))
+    }
+
+    /**
+     * Phones (< 600 dp wide): a menu button opens a side panel from the right.
+     * Wide screens (landscape, tablets): a permanent navigation rail on the right instead.
+     */
+    private fun applyNavMode() {
+        val wide = resources.configuration.screenWidthDp >= 600
+        findViewById<View>(R.id.mainRail).visibility = if (wide) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.railLine).visibility = if (wide) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.btnMenu).visibility = if (wide) View.GONE else View.VISIBLE
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        applyNavMode()
+    }
+
+    /** The side panel: the three destinations, then name, version and email pinned at the bottom. */
+    private fun openMenu() {
+        val p = palette
+        val d = resources.displayMetrics.density
+        fun px(v: Float) = (v * d).toInt()
+        val sheet = com.google.android.material.sidesheet.SideSheetDialog(this)
+        val kit = Kit(this, p)
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(px(12f), px(20f), px(12f), px(12f))
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(p.surfaceContainerHigh)
+                val r = 28 * d
+                cornerRadii = floatArrayOf(r, r, 0f, 0f, 0f, 0f, r, r)
+            }
+        }
+        content.addView(TextView(this).apply {
+            setText(R.string.app_name)
+            typeface = Typeface.createFromAsset(assets, "fonts/GFSDidot.otf")
+            textSize = 22f
+            setTextColor(p.primaryText)
+            setPadding(px(16f), 0, px(16f), px(16f))
+        })
+        val items = listOf(
+            Triple(R.drawable.ic_settings_tune, R.string.settings, R.string.nav_settings_desc) to HubActivity.PAGE_SETTINGS,
+            Triple(R.drawable.ic_palette, R.string.appearance, R.string.nav_appearance_desc) to HubActivity.PAGE_APPEARANCE,
+            Triple(R.drawable.ic_library_music, R.string.recordings, R.string.nav_recordings_desc) to HubActivity.PAGE_RECORDINGS,
+        )
+        for ((t, page) in items) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(px(16f), px(14f), px(16f), px(14f))
+                background = p.ripple(p.mask(28f, d))
+                minimumHeight = px(56f)
+                setOnClickListener { sheet.dismiss(); openHub(page) }
+            }
+            row.addView(kit.icon(t.first, p.onSurfaceVariant), LinearLayout.LayoutParams(px(24f), px(24f)).apply { marginEnd = px(16f) })
+            val texts = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+            texts.addView(kit.titleText(getString(t.second)))
+            texts.addView(kit.bodyText(getString(t.third)))
+            row.addView(texts)
+            content.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+        }
+        content.addView(View(this), LinearLayout.LayoutParams(1, 0, 1f))
+        content.addView(View(this).apply { setBackgroundColor(p.outlineVariant) }, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1).apply {
+            setMargins(px(16f), 0, px(16f), px(8f))
+        })
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
+        content.addView(kit.bodyText(HubActivity.DEVELOPER).apply { setPadding(px(16f), px(4f), px(16f), 0) })
+        content.addView(kit.bodyText(getString(R.string.version_only, version)).apply { setPadding(px(16f), 0, px(16f), px(4f)) })
+        content.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(px(16f), px(10f), px(16f), px(10f))
+            background = p.ripple(p.mask(20f, d))
+            addView(kit.icon(R.drawable.ic_mail, p.primaryText), LinearLayout.LayoutParams(px(18f), px(18f)).apply { marginEnd = px(10f) })
+            addView(TextView(this@MainActivity).apply { setText(R.string.feedback); textSize = 13f; setTextColor(p.primaryText) })
+            setOnClickListener { HubActivity.sendFeedback(this@MainActivity, version) }
+        })
+        sheet.setContentView(content)
+        sheet.show()
+        // Let our rounded panel show instead of the sheet's default square background.
+        (content.parent as? View)?.background = null
     }
 
     private fun pickScale() {
         val names = Catalog.visibleList(prefs.european)
-        AlertDialog.Builder(this)
+        dialog()
             .setTitle(R.string.scale)
             .setSingleChoiceItems(names.toTypedArray(), names.indexOf(prefs.scale).coerceAtLeast(0)) { d, which ->
                 prefs.scale = names[which]
                 applySettings()
                 d.dismiss()
             }
-            .show()
+            .show().also { style(it) }
     }
 
     // --- base (Ni) ------------------------------------------------------------------------
@@ -397,12 +503,13 @@ class MainActivity : ThemedActivity() {
         val pad = (20 * resources.displayMetrics.density).toInt()
         val box = android.widget.FrameLayout(this).apply { setPadding(pad, pad / 2, pad, 0); addView(bar) }
         val cancelled = java.util.concurrent.atomic.AtomicBoolean(false)
-        val dialog = AlertDialog.Builder(this)
+        val dialog = dialog()
             .setTitle(title)
             .setView(box)
             .setCancelable(false)
             .setNegativeButton(android.R.string.cancel) { _, _ -> cancelled.set(true) }
             .show()
+        style(dialog); tintTree(box)
         Thread({
             val result = runCatching {
                 work { f -> runOnUiThread { bar.progress = (f * 1000).toInt() }; !cancelled.get() }
@@ -412,9 +519,9 @@ class MainActivity : ThemedActivity() {
                 result.onSuccess(done).onFailure { e ->
                     if (e !is CancelledException) {
                         showLive()
-                        AlertDialog.Builder(this).setTitle(R.string.app_name)
+                        style(dialog().setTitle(R.string.app_name)
                             .setMessage(getString(R.string.error_open, e.message ?: e.javaClass.simpleName))
-                            .setPositiveButton(android.R.string.ok, null).show()
+                            .setPositiveButton(android.R.string.ok, null).show())
                     }
                 }
             }
@@ -430,7 +537,7 @@ class MainActivity : ThemedActivity() {
         }) { (audio, frames) ->
             if (frames.none { !it.isNaN() }) {
                 showLive()
-                AlertDialog.Builder(this).setMessage(R.string.no_pitch).setPositiveButton(android.R.string.ok, null).show()
+                style(dialog().setMessage(R.string.no_pitch).setPositiveButton(android.R.string.ok, null).show())
                 return@withProgress
             }
             current = file
@@ -446,16 +553,6 @@ class MainActivity : ThemedActivity() {
             refreshTransport()
             if (playAfter) startPlayback(audio)
         }
-    }
-
-    private fun openRecordings() {
-        recordingsResult.launch(Intent(this, RecordingsActivity::class.java))
-    }
-
-    private fun sendCurrent() {
-        val f = current ?: store.list().firstOrNull()
-        if (f == null) { toast(getString(R.string.no_recording_send)); return }
-        shareFile(this, f)
     }
 
     private fun importFrom(uri: Uri) {
@@ -476,16 +573,4 @@ class MainActivity : ThemedActivity() {
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
-    companion object {
-        /** Shares a recording with another app (mail, messengers, Drive…). */
-        fun shareFile(activity: AppCompatActivity, file: File) {
-            val uri = FileProvider.getUriForFile(activity, activity.packageName + ".files", file)
-            val send = Intent(Intent.ACTION_SEND)
-                .setType("audio/wav")
-                .putExtra(Intent.EXTRA_STREAM, uri)
-                .putExtra(Intent.EXTRA_SUBJECT, file.nameWithoutExtension)
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            activity.startActivity(Intent.createChooser(send, activity.getString(R.string.send)))
-        }
-    }
 }

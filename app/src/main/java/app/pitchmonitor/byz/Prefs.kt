@@ -80,6 +80,13 @@ class Prefs(private val context: Context) {
     val scaleColors: IntArray get() { val p = palette(); return IntArray(8) { color("color_scale_$it", p.defaultScale[it]) } }
     val chromaticColors: IntArray get() { val p = palette(); return IntArray(12) { color("color_chromatic_$it", p.defaultChromatic[it]) } }
 
+    /** Back to the theme's own graph colours. */
+    fun resetColors() {
+        val e = sp.edit()
+        sp.all.keys.filter { it.startsWith("color_") }.forEach { e.remove(it) }
+        e.apply()
+    }
+
     /** Forgets a picked colour so the theme's default is used again. */
     fun clearColor(key: String) = sp.edit().remove(key).apply()
 

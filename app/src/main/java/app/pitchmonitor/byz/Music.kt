@@ -34,7 +34,8 @@ class GridLine(
 /** Axis label colours: base/tonic, other notes, semitones. */
 class LabelColors(val strong: Int, val normal: Int, val faint: Int) {
     companion object {
-        val DARK = LabelColors(0xFFD0D0D0.toInt(), 0xFF8A8A8A.toInt(), 0xFF606060.toInt())
+        /** The dark theme's label roles (used where no palette is given, e.g. tests). */
+        val DARK: LabelColors get() = Palette.of(Palette.DARK, Prefs.DEFAULT_ACCENT, true).let { LabelColors(it.labelStrong, it.label, it.labelFaint) }
     }
 }
 

@@ -31,6 +31,13 @@ class GridLine(
     val inScale: Boolean = true,
 )
 
+/** Axis label colours: base/tonic, other notes, semitones. */
+class LabelColors(val strong: Int, val normal: Int, val faint: Int) {
+    companion object {
+        val DARK = LabelColors(0xFFD0D0D0.toInt(), 0xFF8A8A8A.toInt(), 0xFF606060.toInt())
+    }
+}
+
 interface Grid {
     /** Lines with cents in [low, high], ascending. */
     fun lines(low: Double, high: Double): List<GridLine>
@@ -113,6 +120,7 @@ class ByzantineGrid(
     private val mode: ByzMode,
     private val niCents: Double,
     private val chromatic: IntArray,
+    private val labels: LabelColors = LabelColors.DARK,
 ) : Grid {
     override val showsMoria get() = true
     override val monoLabels get() = true
@@ -133,7 +141,7 @@ class ByzantineGrid(
             }
             val width = if (base) 1.3f else if (dom) 1.0f else 0.7f
             val name = Byzantine.NAMES[d]
-            out += GridLine(c, name, name, color, width, if (base) 0xFFD0D0D0.toInt() else 0xFF8A8A8A.toInt(), base)
+            out += GridLine(c, name, name, color, width, if (base) labels.strong else labels.normal, base)
         }
         out.sortBy { it.cents }
         return out
@@ -234,6 +242,7 @@ class WesternGrid(
     private val semitoneLabels: Boolean,
     private val scaleColors: IntArray,
     private val chromaticColors: IntArray,
+    private val labels: LabelColors = LabelColors.DARK,
 ) : Grid {
     private val ref = Pitch.calibration(a4Hz)
 
@@ -256,7 +265,7 @@ class WesternGrid(
                 val (l, a) = Names.chromatic(pc, false)
                 val n = nameOf(l, a, written)
                 out += GridLine(cents, n, n, chromaticColors[pc], 0.7f,
-                    if (pc == 0) 0xFFC0C0C0.toInt() else 0xFF808080.toInt(), pc == 0)
+                    if (pc == 0) labels.strong else labels.normal, pc == 0)
                 continue
             }
             val d = scale.degreeOf(pc)
@@ -264,12 +273,12 @@ class WesternGrid(
                 val (l, a) = scale.spell(d)
                 val n = nameOf(l, a, written)
                 out += GridLine(cents, n, n, scaleColors[d], 0.7f,
-                    if (d == 0) 0xFFC0C0C0.toInt() else 0xFF808080.toInt(), d == 0)
+                    if (d == 0) labels.strong else labels.normal, d == 0)
             } else if (semitoneLines || semitoneLabels) {
                 val (l, a) = Names.chromatic(pc, scale.prefersFlats)
                 val n = nameOf(l, a, written)
                 out += GridLine(cents, if (semitoneLabels) n else null, n,
-                    if (semitoneLines) scaleColors[7] else 0, 0.7f, 0xFF606060.toInt(), false, inScale = false)
+                    if (semitoneLines) scaleColors[7] else 0, 0.7f, labels.faint, false, inScale = false)
             }
         }
         return out

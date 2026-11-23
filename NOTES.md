@@ -45,6 +45,29 @@ Each of these is my own implementation; tell me if the original behaved differen
 | Base box | "ΝΗ +nμ / f Hz" uses 261.6 Hz × 2^(n/72), without calibration, exactly like 1.6.0. |
 | Byzantine line widths and label colours | Chosen to match the screenshots (base line thicker and brighter). |
 
+## Additions after the 1.6.0 baseline (owner's requests, 2026-11-23)
+
+- **Song import** analyses at ~11 kHz (about 16× faster), shows a progress dialog with Cancel,
+  reports errors in a dialog, and a "Back to live" button appears whenever a recording is shown.
+- **Recordings list**: long-press to select several, then Send or Delete together (Rename for one).
+- **Themes**: Follow the phone, Dark (default, the 1.6.0 look), Black (AMOLED), Light, Parchment.
+  Each theme has its own default line/pitch colours for contrast; colours the user picked are kept.
+- **App colour** (was "Settings colour") now colours the whole app: title, gear, bars, chips,
+  hairlines, Settings controls. On light themes it is darkened for text contrast.
+- **Colour picker**: saturation/brightness square, hue slider, old/new preview, hex code, recent
+  colours, presets, and "Default" to go back to the theme's colour.
+- **Base box** (ΝΗ +nμ / Hz): tap it to go back to the natural base.
+- **Settings order**: threshold, zoom, tuner, auto scroll, tempo, buttons, note names, European
+  scales, recordings, lines and tuning, appearance, colours, language. The Scale dropdown was removed
+  (the scale is chosen on the main screen). A quiet footer sends feedback by email (email app, or
+  Gmail in the browser if there is none) and shows the version and the developer's name.
+- **Byzantine tempo presets** (αγωγή), next to the free BPM slider. **Approximate values** — I found no
+  published standard, so these are common teaching values; please correct them if you use others:
+  very slow / Papadic 56, slow / Sticheraric 72, moderate / short Sticheraric 92,
+  fast / Heirmologic 112, very fast / short Heirmologic 132.
+- **Language**: English (default) or Greek, independent of the phone's language. Scale names
+  (C Major…) and chromatic note names stay in their international form.
+
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 
 Compared on the phone with the owner's 1.6.0 screenshots:

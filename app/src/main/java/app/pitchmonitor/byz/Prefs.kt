@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 
 /** Every setting of the app, with its default. Values are saved as soon as they change. */
-class Prefs(context: Context) {
-    private val sp: SharedPreferences = context.getSharedPreferences("byz_settings", Context.MODE_PRIVATE)
+class Prefs(private val context: Context) {
+    private val sp: SharedPreferences = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
     private fun f(key: String, def: Float) = FloatPref(key, def)
     private fun i(key: String, def: Int) = IntPref(key, def)
@@ -46,21 +46,51 @@ class Prefs(context: Context) {
     var european by s("european", Catalog.EU_ALL)
     var niOffset by i("ni_offset", 0)                // moria, -72..72
 
-    // Colours
-    var colorPitch by i("color_pitch", 0xFFFFFF00.toInt())
-    var colorBeats by i("color_beats", 0xFF444444.toInt())
-    var colorMetronome by i("color_metronome", 0xFF000080.toInt())
+    // Look
+    var theme by s("theme", Palette.DARK)
+    var language by s("language", Lang.EN)
     var accent by i("accent", DEFAULT_ACCENT)
     var scaleColorsOpen by b("scale_colors_open", true)
     var chromaticColorsOpen by b("chromatic_colors_open", false)
 
-    fun scaleColor(i: Int): Int = sp.getInt("color_scale_$i", DEFAULT_SCALE_COLORS[i])
-    fun setScaleColor(i: Int, c: Int) = sp.edit().putInt("color_scale_$i", c).apply()
-    fun chromaticColor(i: Int): Int = sp.getInt("color_chromatic_$i", DEFAULT_CHROMATIC_COLORS[i])
-    fun setChromaticColor(i: Int, c: Int) = sp.edit().putInt("color_chromatic_$i", c).apply()
+    fun palette(): Palette = Palette.of(context, theme, accent)
 
-    val scaleColors: IntArray get() = IntArray(8) { scaleColor(it) }
-    val chromaticColors: IntArray get() = IntArray(12) { chromaticColor(it) }
+    // Colours: a colour the user picked is kept; otherwise the theme's default is used.
+    private fun color(key: String, def: Int) = if (sp.contains(key)) sp.getInt(key, def) else def
+    private fun setColor(key: String, c: Int) {
+        sp.edit().putInt(key, c).apply()
+        addRecent(c)
+    }
+
+    var colorPitch: Int
+        get() = color("color_pitch", palette().defaultPitch)
+        set(v) = setColor("color_pitch", v)
+    var colorBeats: Int
+        get() = color("color_beats", palette().defaultBeats)
+        set(v) = setColor("color_beats", v)
+    var colorMetronome: Int
+        get() = color("color_metronome", palette().defaultMetronome)
+        set(v) = setColor("color_metronome", v)
+
+    fun scaleColor(i: Int): Int = color("color_scale_$i", palette().defaultScale[i])
+    fun setScaleColor(i: Int, c: Int) = setColor("color_scale_$i", c)
+    fun chromaticColor(i: Int): Int = color("color_chromatic_$i", palette().defaultChromatic[i])
+    fun setChromaticColor(i: Int, c: Int) = setColor("color_chromatic_$i", c)
+
+    val scaleColors: IntArray get() { val p = palette(); return IntArray(8) { color("color_scale_$it", p.defaultScale[it]) } }
+    val chromaticColors: IntArray get() { val p = palette(); return IntArray(12) { color("color_chromatic_$it", p.defaultChromatic[it]) } }
+
+    /** Forgets a picked colour so the theme's default is used again. */
+    fun clearColor(key: String) = sp.edit().remove(key).apply()
+
+    /** Colours picked lately, newest first (for the colour picker). */
+    val recentColors: List<Int>
+        get() = (sp.getString("recent_colors", "") ?: "").split(',').mapNotNull { it.toLongOrNull()?.toInt() }
+
+    private fun addRecent(c: Int) {
+        val list = (listOf(c) + recentColors.filter { it != c }).take(8)
+        sp.edit().putString("recent_colors", list.joinToString(",") { (it.toLong() and 0xFFFFFFFFL).toString() }).apply()
+    }
 
     /** Written-above-sounding transposition in semitones. */
     val transpose: Int get() = Catalog.INSTRUMENT_SHIFT[instrument.coerceIn(0, 3)] + transposeShift
@@ -68,16 +98,20 @@ class Prefs(context: Context) {
     /** The DEFAULT button: everything back to its default, except where the base sits. */
     fun resetToDefaults() {
         val keepOffset = niOffset
+        val keepLanguage = language
         sp.edit().clear().apply()
         niOffset = keepOffset
+        language = keepLanguage
     }
 
     /** The grid for the selected scale. */
     fun buildGrid(): Grid {
         val mode = Byzantine.mode(scale)
-        if (mode != null) return ByzantineGrid(mode, Byzantine.niCents(niOffset, a4), chromaticColors)
+        val p = palette()
+        val labels = LabelColors(p.labelStrong, p.label, p.labelFaint)
+        if (mode != null) return ByzantineGrid(mode, Byzantine.niCents(niOffset, a4), chromaticColors, labels)
         val w = WesternScale.byTitle(scale) ?: WesternScale.ALL[0]
-        return WesternGrid(w, a4, transpose, noteNames, octaveA3, semitoneLines, semitoneLabels, scaleColors, chromaticColors)
+        return WesternGrid(w, a4, transpose, noteNames, octaveA3, semitoneLines, semitoneLabels, scaleColors, chromaticColors, labels)
     }
 
     // --- delegates -----------------------------------------------------------------------
@@ -105,25 +139,21 @@ class Prefs(context: Context) {
     companion object {
         const val DEFAULT_ACCENT = 0xFFD9AB3F.toInt()
 
-        /** Settings colour swatches: gold, cyan, red, green, blue, purple, white. */
+        const val FILE = "byz_settings"
+
+        /** App colour swatches: gold, cyan, red, green, blue, purple, white. */
         val ACCENTS = intArrayOf(
             0xFFD9AB3F.toInt(), 0xFF80CBC4.toInt(), 0xFFE3584B.toInt(), 0xFF5FD38A.toInt(),
             0xFF64A0FF.toInt(), 0xFFB48CF0.toInt(), 0xFFE0E0E0.toInt(),
         )
 
-        /** Tonic, 2nd..7th degree, semitone. */
-        val DEFAULT_SCALE_COLORS = intArrayOf(
-            0xFF808080.toInt(), 0xFF404040.toInt(), 0xFF404040.toInt(), 0xFF404040.toInt(),
-            0xFF404040.toInt(), 0xFF404040.toInt(), 0xFF404040.toInt(), 0xFF202020.toInt(),
+        /** Byzantine tempo (αγωγή) presets: string resource and BPM. Approximate teaching values. */
+        val TEMPO_PRESETS = listOf(
+            R.string.tempo_papadic to 56,
+            R.string.tempo_slow_sticheraric to 72,
+            R.string.tempo_short_sticheraric to 92,
+            R.string.tempo_heirmologic to 112,
+            R.string.tempo_short_heirmologic to 132,
         )
-
-        /** C, C♯ .. B. Byzantine lines use C for the base, G for dominants and D for the rest. */
-        val DEFAULT_CHROMATIC_COLORS = IntArray(12) { pc ->
-            when {
-                pc == 0 -> 0xFF808080.toInt()
-                pc in intArrayOf(2, 4, 5, 7, 9, 11) -> 0xFF404040.toInt()
-                else -> 0xFF282828.toInt()
-            }
-        }
     }
 }

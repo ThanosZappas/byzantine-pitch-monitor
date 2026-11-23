@@ -67,14 +67,14 @@ class MusicTest {
 
     @Test fun westernGridLabels() {
         val g = WesternGrid(WesternScale.byTitle("C Major")!!, 440, 0, 0, false, true, false,
-            Prefs.DEFAULT_SCALE_COLORS, Prefs.DEFAULT_CHROMATIC_COLORS)
+            Palette.DARK_SCALE, Palette.DARK_CHROMATIC)
         val lines = g.lines(-900.0 - 1, 300.0 + 1) // C4 .. C5
         assertEquals(listOf("C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"), lines.mapNotNull { it.label })
         assertEquals(13, lines.size) // with the five semitone lines
         assertFalse(lines.first { it.label == null }.inScale)
         // 440 Hz = A3 numbering.
         val a3 = WesternGrid(WesternScale.byTitle("C Major")!!, 440, 0, 0, true, false, false,
-            Prefs.DEFAULT_SCALE_COLORS, Prefs.DEFAULT_CHROMATIC_COLORS)
+            Palette.DARK_SCALE, Palette.DARK_CHROMATIC)
         assertEquals("A3", a3.lines(-1.0, 1.0).single().label)
     }
 

@@ -40,6 +40,7 @@
     </LinearLayout>
 
     <View
+        android:id="@+id/lineTop"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/bar_line" />
@@ -118,6 +119,7 @@
     </FrameLayout>
 
     <View
+        android:id="@+id/lineBottom"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/bar_line" />
@@ -186,6 +188,9 @@
 
             <TextView
                 android:id="@+id/baseDetails"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/base_reset_hint"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="2dp"

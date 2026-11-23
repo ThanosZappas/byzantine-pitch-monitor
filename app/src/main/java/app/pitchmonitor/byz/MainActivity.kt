@@ -22,8 +22,8 @@ import java.io.File
 import java.util.Locale
 import kotlin.math.pow
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var prefs: Prefs
+class MainActivity : ThemedActivity() {
+    override val fullScreen = true
     private lateinit var store: RecordingStore
     private val liveTrack = PitchTrack()
     private val engine = AudioEngine(liveTrack)
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     private var showingRecording = false
 
     private val askMic = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        if (ok) startInput() else toast("The microphone is needed to show your pitch")
+        if (ok) startInput() else toast(getString(R.string.mic_needed))
     }
 
     private val settingsResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
@@ -68,7 +68,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = Prefs(this)
         store = RecordingStore(this)
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -87,6 +86,8 @@ class MainActivity : AppCompatActivity() {
         btnPlay = findViewById(R.id.btnPlay)
 
         findViewById<TextView>(R.id.title).typeface = Typeface.createFromAsset(assets, "fonts/GFSDidot.otf")
+        applyPalette()
+        baseDetails.setOnClickListener { setOffset(0) }
         graph.track = liveTrack
         graph.onZoom = { h, v -> prefs.hZoom = h; prefs.vZoom = v }
         graph.centerCents = Byzantine.niCents(prefs.niOffset, prefs.a4) + 600
@@ -115,6 +116,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun debugExtras() {
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
+        // `--es theme light|dark|black|parchment|system`, `--es lang en|el`, `--ei accent 0..6`
+        var restyle = false
+        intent.getStringExtra("theme")?.let { if (it in Palette.THEMES && it != prefs.theme) { prefs.theme = it; restyle = true } }
+        intent.getStringExtra("lang")?.let { if (it != prefs.language) { prefs.language = it; restyle = true } }
+        intent.getIntExtra("accent", -1).takeIf { it in Prefs.ACCENTS.indices }?.let {
+            if (Prefs.ACCENTS[it] != prefs.accent) { prefs.accent = Prefs.ACCENTS[it]; restyle = true }
+        }
+        intent.removeExtra("theme"); intent.removeExtra("lang"); intent.removeExtra("accent")
+        if (restyle) { recreate(); return }
         intent.getStringExtra("scale")?.let { if (Catalog.ORDERED.contains(it)) prefs.scale = it }
         intent.getIntExtra("scaleIndex", -1).takeIf { it in Catalog.ORDERED.indices }?.let { prefs.scale = Catalog.ORDERED[it] }
         demo = intent.getBooleanExtra("demo", false)
@@ -187,8 +197,46 @@ class MainActivity : AppCompatActivity() {
         refreshTransport()
     }
 
+    /** Colours every bar, button and the graph from the theme and app colour. */
+    private fun applyPalette() {
+        val p = palette
+        val d = resources.displayMetrics.density
+        findViewById<View>(R.id.topBar).setBackgroundColor(p.bar)
+        findViewById<View>(R.id.bottomBar).setBackgroundColor(p.bar)
+        findViewById<View>(R.id.lineTop).setBackgroundColor(p.barLine)
+        findViewById<View>(R.id.lineBottom).setBackgroundColor(p.barLine)
+        findViewById<TextView>(R.id.title).setTextColor(p.accentText)
+        findViewById<ImageButton>(R.id.btnSettings).apply {
+            setColorFilter(p.accentText)
+            background = android.graphics.drawable.StateListDrawable().apply {
+                addState(intArrayOf(android.R.attr.state_pressed), android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL; setColor(p.chipPressed)
+                })
+            }
+        }
+        graph.setPalette(p)
+        val scaleStroke = Palette.blend(p.accent, p.bar, if (p.dark) 0.4f else 0.3f)
+        btnScale.background = p.chip(stroke = scaleStroke, dp = d)
+        btnScale.setTextColor(p.accentText)
+        btnLive.background = p.chip(stroke = scaleStroke, dp = d)
+        btnLive.setTextColor(p.accentText)
+        findViewById<TextView>(R.id.btnBaseVoice).apply {
+            background = p.chip(stroke = p.accent, fill = p.accentFill, pressed = p.accentFillPressed, dp = d)
+            setTextColor(p.accentOnFill)
+        }
+        btnReset.background = p.chip(dp = d)
+        btnReset.setTextColor(p.text)
+        for (id in intArrayOf(R.id.btnDown1, R.id.btnDown6, R.id.btnUp6, R.id.btnUp1)) {
+            findViewById<TextView>(id).apply { background = p.chip(dp = d); setTextColor(p.accentText) }
+        }
+        baseDetails.background = p.chip(stroke = p.infoFill, fill = p.infoFill, pressed = p.chipPressed, dp = d)
+        baseDetails.setTextColor(p.infoText)
+        refreshHold()
+    }
+
     private fun openSettings() {
-        settingsResult.launch(Intent(this, SettingsActivity::class.java).putExtra("scrollTo", intent.getIntExtra("scrollTo", 0)))
+        settingsResult.launch(Intent(this, SettingsActivity::class.java).putExtra("scrollTo", intent.getIntExtra("scrollTo", 0))
+            .putExtra("picker", intent.getBooleanExtra("picker", false)))
     }
 
     private fun pickScale() {
@@ -226,12 +274,12 @@ class MainActivity : AppCompatActivity() {
         val mode = Byzantine.mode(prefs.scale) ?: return
         val cents = liveTrack.lastVoicedCents
         if (cents.isNaN() || SystemClock.uptimeMillis() - liveTrack.lastVoicedAt > 1500) {
-            toast("Sing the base note, then tap “Base = voice” while singing")
+            toast(getString(R.string.sing_base))
             return
         }
         val shift = Byzantine.voiceShift(cents, mode.genus.positions[mode.base], prefs.a4)
         setOffset(shift)
-        toast(String.format(Locale.US, "%s = voice  ·  ΝΗ %+dμ", Byzantine.NAMES[mode.base], shift))
+        toast(getString(R.string.base_set, Byzantine.NAMES[mode.base], shift))
     }
 
     // --- hold -----------------------------------------------------------------------------
@@ -249,7 +297,7 @@ class MainActivity : AppCompatActivity() {
     private fun refreshHold() {
         val on = graph.held
         btnHold.isActivated = on
-        btnHold.setTextColor(if (on) getColor(R.color.gold) else 0xFFAAAAAA.toInt())
+        btnHold.setTextColor(if (on) palette.accentText else palette.hold)
     }
 
     private fun showLive() {
@@ -282,10 +330,10 @@ class MainActivity : AppCompatActivity() {
             finishRecording()
             return
         }
-        if (!engine.running) { toast("The microphone is not available"); return }
+        if (!engine.running) { toast(getString(R.string.mic_unavailable)); return }
         showLive()
         engine.startRecording(store.newFile())
-        toast("Recording…")
+        toast(getString(R.string.recording_started))
         refreshTransport()
     }
 
@@ -298,7 +346,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopAll() {
         when {
-            engine.recording -> { finishRecording(); toast("Saved ${current?.nameWithoutExtension}") }
+            engine.recording -> { finishRecording(); toast(getString(R.string.saved, current?.nameWithoutExtension ?: "")) }
             player != null -> player?.stop()
             showingRecording -> showLive()
         }
@@ -406,7 +454,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendCurrent() {
         val f = current ?: store.list().firstOrNull()
-        if (f == null) { toast("No recording to send"); return }
+        if (f == null) { toast(getString(R.string.no_recording_send)); return }
         shareFile(this, f)
     }
 

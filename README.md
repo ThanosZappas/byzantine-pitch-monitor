@@ -43,7 +43,9 @@ adb shell am start -n app.pitchmonitor.byz.dev/app.pitchmonitor.byz.MainActivity
 
 - `demo` feeds a synthetic voice instead of the microphone.
 - `scale` picks a scale by name, `scaleIndex` by its place in the list (0 = C Major, 1 = Ήχος Α').
-- `open settings|recordings` opens that screen; `scrollTo` scrolls Settings down (dp).
+- `open settings|recordings` opens that screen; `scrollTo` scrolls Settings down (dp); `picker` opens the colour picker.
+- `theme light|dark|black|parchment|system`, `lang en|el`, `accent 0..6` change the look.
+- `importFile <path>` imports an audio file the app can read.
 
 ## Credits
 

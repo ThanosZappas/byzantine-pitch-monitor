@@ -89,6 +89,22 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
     private val fillPaint = Paint()
     private val marker = Path()
 
+    private var bg = Color.BLACK
+
+    /** Applies a theme's graph colours. */
+    fun setPalette(p: Palette) {
+        bg = p.graphBg
+        setBackgroundColor(bg)
+        axisPaint.color = p.axis
+        moriaPaint.color = p.moria
+        tunerName.color = p.tuner
+        tunerTick.color = p.tick
+        tunerLabel.color = p.tick
+        hzPaint.color = p.tick
+        markerColor = p.tuner
+    }
+    private var markerColor = Color.WHITE
+
     private val pxPerCent get() = 0.22f * dp * vZoom
     private val pxPerFrame get() = (40f * dp * hZoom / FRAMES_PER_SECOND).toFloat()
 
@@ -217,7 +233,7 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
         }
 
         // Axis and labels.
-        fillPaint.color = Color.BLACK
+        fillPaint.color = bg
         fillPaint.alpha = 255
         canvas.drawRect(0f, 0f, labelCol - 1, h, fillPaint)
         canvas.drawLine(labelCol, 0f, labelCol, h, axisPaint)
@@ -242,7 +258,7 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
         // Tuner and frequency.
         val p = tunerPitch(endIdx, st.smoothing)
         if (!p.isNaN()) {
-            if (st.showTuner) drawTuner(canvas, g, p, w)
+            if (st.showTuner) drawTuner(canvas, g, p, w, labelCol)
             if (st.showHz) {
                 canvas.drawText(String.format(Locale.US, "%4.0fHz", Pitch.centsToHz(p)), w * 4 / 5, 36 * dp, hzPaint)
             }
@@ -251,7 +267,7 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
         postInvalidateOnAnimation()
     }
 
-    private fun drawTuner(canvas: Canvas, g: Grid, p: Double, w: Float) {
+    private fun drawTuner(canvas: Canvas, g: Grid, p: Double, w: Float, labelCol: Float) {
         val near = g.tunerLines(p - 800, p + 800).minByOrNull { abs(it.cents - p) } ?: return
         val cx = w / 2
         canvas.drawText(near.name, cx, 36 * dp, tunerName)
@@ -264,18 +280,19 @@ class PitchView(context: Context, attrs: AttributeSet? = null) : View(context, a
         marker.lineTo(cx + 4 * dp, rowY - 6 * dp)
         marker.lineTo(cx, rowY - 1.5f * dp)
         marker.close()
-        fillPaint.color = Color.WHITE
+        fillPaint.color = markerColor
         canvas.drawPath(marker, fillPaint)
         // Ticks every 10 cents.
         var c = floor((dev - 110) / 10) * 10
         while (c <= dev + 110) {
             val x = cx + ((c - dev) * scale).toFloat()
-            canvas.drawLine(x, rowY, x, rowY + 2.5f * dp, tunerTick)
+            if (x > labelCol) canvas.drawLine(x, rowY, x, rowY + 2.5f * dp, tunerTick)
             c += 10
         }
         // The scale notes within reach.
         for (l in g.tunerLines(p - 120, p + 120)) {
             val x = cx + ((l.cents - p) * scale).toFloat()
+            if (x < labelCol + 12 * dp) continue
             canvas.drawLine(x, rowY, x, rowY + 5 * dp, tunerTick)
             canvas.drawText(l.name, x, rowY + 16 * dp, tunerLabel)
         }

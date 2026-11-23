@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Κύρια οθόνη -->
+    <string name="settings">Ρυθμίσεις</string>
+    <string name="scale">Κλίμακα</string>
+    <string name="hold">ΠΑΥΣΗ</string>
+    <string name="base_voice">Βάση =\nφωνή</string>
+    <string name="reset">Αρχικό</string>
+    <string name="base_reset_hint">Βάση: πατήστε για επιστροφή στη φυσική βάση</string>
+    <string name="back_to_live">✕  Επιστροφή σε ζωντανό</string>
+    <string name="mic_needed">Χρειάζεται το μικρόφωνο για να δείξει τον τόνο σας</string>
+    <string name="mic_unavailable">Το μικρόφωνο δεν είναι διαθέσιμο</string>
+    <string name="sing_base">Ψάλτε τη βάση και πατήστε «Βάση = φωνή» ενώ ψάλλετε</string>
+    <string name="base_set">%1$s = φωνή  ·  ΝΗ %2$+dμ</string>
+    <string name="recording_started">Ηχογράφηση…</string>
+    <string name="saved">Αποθηκεύτηκε: %1$s</string>
+    <string name="no_recording_send">Δεν υπάρχει ηχογράφηση για αποστολή</string>
+    <string name="loading">Άνοιγμα %1$s…</string>
+    <string name="importing">Εισαγωγή %1$s…</string>
+    <string name="error_open">Το αρχείο δεν άνοιξε.\n\n%1$s</string>
+    <string name="no_pitch">Δεν βρέθηκε τόνος σε αυτή την ηχογράφηση. Δοκιμάστε χαμηλότερο κατώφλι έντασης στις Ρυθμίσεις.</string>
+
+    <!-- Ηχογραφήσεις -->
+    <string name="recordings">Ηχογραφήσεις</string>
+    <string name="recordings_list">Λίστα ηχογραφήσεων</string>
+    <string name="list_button">Λίστα</string>
+    <string name="send">Αποστολή</string>
+    <string name="import_">Εισαγωγή</string>
+    <string name="delete">Διαγραφή</string>
+    <string name="rename">Μετονομασία</string>
+    <string name="select_all">Επιλογή όλων</string>
+    <string name="n_selected">Επιλέχθηκαν %1$d</string>
+    <string name="delete_one">Διαγραφή του «%1$s»;</string>
+    <string name="delete_many">Διαγραφή %1$d ηχογραφήσεων;</string>
+    <string name="name_taken">Το όνομα υπάρχει ήδη</string>
+    <string name="no_recordings">Δεν υπάρχουν ηχογραφήσεις ακόμη</string>
+
+    <!-- Ρυθμίσεις -->
+    <string name="default_">Προεπιλογή</string>
+    <string name="threshold">Κατώφλι έντασης</string>
+    <string name="h_zoom">Οριζόντιο ζουμ</string>
+    <string name="v_zoom">Κατακόρυφο ζουμ</string>
+    <string name="tuner">Κουρδιστήρι</string>
+    <string name="show_tuner">Εμφάνιση κουρδιστηριού</string>
+    <string name="smoothing">Εξομάλυνση</string>
+    <string name="show_hz">Εμφάνιση συχνότητας σε Hz</string>
+    <string name="auto_scroll">Αυτόματη κύλιση</string>
+    <string name="enable_auto_scroll">Ενεργή αυτόματη κύλιση</string>
+    <string name="scroll_speed">Ταχύτητα</string>
+    <string name="tempo">Ρυθμός</string>
+    <string name="beat_lines">Γραμμές στους χρόνους</string>
+    <string name="metronome">Μετρονόμος</string>
+    <string name="blink">Αναβόσβημα οθόνης</string>
+    <string name="byz_tempo">Βυζαντινή αγωγή</string>
+    <string name="tempo_custom">Ελεύθερο BPM</string>
+    <string name="tempo_papadic">Πολύ αργή · Παπαδικό</string>
+    <string name="tempo_slow_sticheraric">Αργή · Στιχηραρικό</string>
+    <string name="tempo_short_sticheraric">Μέτρια · Σύντομο στιχηραρικό</string>
+    <string name="tempo_heirmologic">Γοργή · Ειρμολογικό</string>
+    <string name="tempo_short_heirmologic">Πολύ γοργή · Σύντομο ειρμολογικό</string>
+    <string name="bpm">BPM</string>
+    <string name="meter">Μέτρο</string>
+    <string name="meter_none">Κανένα</string>
+    <string name="button_display">Κουμπιά οθόνης</string>
+    <string name="tempo_button">Ρυθμός</string>
+    <string name="hide_transport">Απόκρυψη κουμπιών εγγραφής / αναπαραγωγής / διακοπής</string>
+    <string name="note_name">Ονόματα φθόγγων</string>
+    <string name="names_english">C, D, E, F, G, A, B</string>
+    <string name="names_solfege">Ντο, Ρε, Μι, Φα, Σολ, Λα, Σι</string>
+    <string name="european_scales">Ευρωπαϊκές κλίμακες</string>
+    <string name="eu_all">Όλες οι ευρωπαϊκές κλίμακες</string>
+    <string name="eu_cmajor">Μόνο η Ντο μείζονα (C Major)</string>
+    <string name="eu_none">Απόκρυψη ευρωπαϊκών κλιμάκων</string>
+    <string name="lines_tuning">Γραμμές και κούρδισμα</string>
+    <string name="semitone_lines">Γραμμές ημιτονίων</string>
+    <string name="semitone_labels">Ονόματα ημιτονίων στον άξονα</string>
+    <string name="octave_number">Αρίθμηση οκτάβας</string>
+    <string name="octave_440">440Hz =</string>
+    <string name="calibration">Βαθμονόμηση</string>
+    <string name="a4_eq">A4 =</string>
+    <string name="transpose">Μεταφορά (όργανο)</string>
+    <string name="inst_c">C</string>
+    <string name="inst_bb">B♭</string>
+    <string name="inst_eb">E♭</string>
+    <string name="inst_f">F</string>
+    <string name="appearance">Εμφάνιση</string>
+    <string name="theme">Θέμα</string>
+    <string name="theme_system">Όπως το κινητό</string>
+    <string name="theme_dark">Σκούρο</string>
+    <string name="theme_black">Μαύρο (AMOLED)</string>
+    <string name="theme_light">Ανοιχτό</string>
+    <string name="theme_parchment">Περγαμηνή (ζεστό ανοιχτό)</string>
+    <string name="app_colour">Χρώμα εφαρμογής</string>
+    <string name="color">Χρώματα</string>
+    <string name="color_pitch">Τόνος</string>
+    <string name="color_beats">Χρόνοι</string>
+    <string name="color_metronome">Μετρονόμος</string>
+    <string name="chromatic">Χρωματική</string>
+    <string name="deg_1">1η Τονική</string>
+    <string name="deg_2">2η Υπερτονική</string>
+    <string name="deg_3">3η Μέση</string>
+    <string name="deg_4">4η Υποδεσπόζουσα</string>
+    <string name="deg_5">5η Δεσπόζουσα</string>
+    <string name="deg_6">6η Υπομέση</string>
+    <string name="deg_7">7η Προσαγωγέας</string>
+    <string name="deg_semitone">Ημιτόνιο</string>
+    <string name="language">Γλώσσα</string>
+    <string name="feedback">Ιδέες ή προβλήματα; Στείλτε email</string>
+    <string name="version_line">Έκδοση %1$s · %2$s</string>
+
+    <!-- Επιλογή χρώματος -->
+    <string name="default_color">Προεπιλογή</string>
+    <string name="recent_colors">Πρόσφατα</string>
+    <string name="preset_colors">Χρώματα</string>
+</resources>

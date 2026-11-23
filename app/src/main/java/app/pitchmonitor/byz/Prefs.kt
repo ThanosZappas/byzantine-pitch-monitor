@@ -55,6 +55,28 @@ class Prefs(private val context: Context) {
 
     fun palette(): Palette = Palette.of(context, theme, accent)
 
+    // Graph colour scheme: follows the app colour by default; locked keeps the current colours.
+    var graphScheme by s("graph_scheme", Palette.GRAPH_APP)
+    var graphLock by b("graph_lock", false)
+    fun graphDefaults(): GraphColors = palette().graph(graphScheme)
+
+    /** Changes the app colour; with the graph locked, the graph keeps its current colours. */
+    fun changeAccent(color: Int) {
+        if (graphLock) freezeGraphColors()
+        accent = color
+    }
+
+    /** Writes the graph colours now shown as picked colours, so later theme changes leave them. */
+    fun freezeGraphColors() {
+        val g = graphDefaults()
+        val e = sp.edit()
+        fun keep(key: String, c: Int) { if (!sp.contains(key)) e.putInt(key, c) }
+        keep("color_pitch", g.pitch); keep("color_beats", g.beats); keep("color_metronome", g.metronome)
+        for (i in 0 until 8) keep("color_scale_$i", g.scale[i])
+        for (i in 0 until 12) keep("color_chromatic_$i", g.chromatic[i])
+        e.apply()
+    }
+
     // Colours: a colour the user picked is kept; otherwise the theme's default is used.
     private fun color(key: String, def: Int) = if (sp.contains(key)) sp.getInt(key, def) else def
     private fun setColor(key: String, c: Int) {
@@ -63,22 +85,63 @@ class Prefs(private val context: Context) {
     }
 
     var colorPitch: Int
-        get() = color("color_pitch", palette().defaultPitch)
+        get() = color("color_pitch", graphDefaults().pitch)
         set(v) = setColor("color_pitch", v)
     var colorBeats: Int
-        get() = color("color_beats", palette().defaultBeats)
+        get() = color("color_beats", graphDefaults().beats)
         set(v) = setColor("color_beats", v)
     var colorMetronome: Int
-        get() = color("color_metronome", palette().defaultMetronome)
+        get() = color("color_metronome", graphDefaults().metronome)
         set(v) = setColor("color_metronome", v)
 
-    fun scaleColor(i: Int): Int = color("color_scale_$i", palette().defaultScale[i])
+    fun scaleColor(i: Int): Int = color("color_scale_$i", graphDefaults().scale[i])
     fun setScaleColor(i: Int, c: Int) = setColor("color_scale_$i", c)
-    fun chromaticColor(i: Int): Int = color("color_chromatic_$i", palette().defaultChromatic[i])
+    fun chromaticColor(i: Int): Int = color("color_chromatic_$i", graphDefaults().chromatic[i])
     fun setChromaticColor(i: Int, c: Int) = setColor("color_chromatic_$i", c)
 
-    val scaleColors: IntArray get() { val p = palette(); return IntArray(8) { color("color_scale_$it", p.defaultScale[it]) } }
-    val chromaticColors: IntArray get() { val p = palette(); return IntArray(12) { color("color_chromatic_$it", p.defaultChromatic[it]) } }
+    val scaleColors: IntArray get() { val g = graphDefaults(); return IntArray(8) { color("color_scale_$it", g.scale[it]) } }
+    val chromaticColors: IntArray get() { val g = graphDefaults(); return IntArray(12) { color("color_chromatic_$it", g.chromatic[it]) } }
+
+    // --- named presets of the Settings page (kept in their own file, so DEFAULT keeps them) ---
+
+    private val presets = context.getSharedPreferences("byz_presets", Context.MODE_PRIVATE)
+
+    fun presetNames(): List<String> = presets.all.keys.sortedBy { it.lowercase() }
+
+    /** Saves every Settings-page value under [name] (replacing a preset of that name). */
+    fun savePreset(name: String) {
+        val all = sp.all
+        val o = org.json.JSONObject()
+        for (k in PRESET_KEYS) {
+            when (val v = all[k]) {
+                is Boolean -> o.put(k, org.json.JSONObject().put("b", v))
+                is Int -> o.put(k, org.json.JSONObject().put("i", v))
+                is Float -> o.put(k, org.json.JSONObject().put("f", v.toDouble()))
+                is String -> o.put(k, org.json.JSONObject().put("s", v))
+            }
+        }
+        presets.edit().putString(name, o.toString()).apply()
+    }
+
+    /** Puts the Settings-page values of preset [name] back (missing values go to their default). */
+    fun loadPreset(name: String): Boolean {
+        val o = runCatching { org.json.JSONObject(presets.getString(name, null) ?: return false) }.getOrNull() ?: return false
+        val e = sp.edit()
+        for (k in PRESET_KEYS) {
+            val v = o.optJSONObject(k)
+            when {
+                v == null -> e.remove(k)
+                v.has("b") -> e.putBoolean(k, v.getBoolean("b"))
+                v.has("i") -> e.putInt(k, v.getInt("i"))
+                v.has("f") -> e.putFloat(k, v.getDouble("f").toFloat())
+                v.has("s") -> e.putString(k, v.getString("s"))
+            }
+        }
+        e.apply()
+        return true
+    }
+
+    fun deletePreset(name: String) = presets.edit().remove(name).apply()
 
     /** Back to the theme's own graph colours. */
     fun resetColors() {
@@ -147,6 +210,13 @@ class Prefs(private val context: Context) {
         const val DEFAULT_ACCENT = 0xFFD9AB3F.toInt()
 
         const val FILE = "byz_settings"
+
+        /** What a Settings preset holds (the Settings page; not looks, language or the base). */
+        val PRESET_KEYS = listOf(
+            "threshold", "h_zoom", "v_zoom", "auto_scroll", "scroll_speed", "show_tuner", "smoothing", "show_hz",
+            "beat_lines", "blink", "bpm", "meter", "show_hold", "show_scale", "hide_transport", "note_names",
+            "european", "semitone_lines", "semitone_labels", "octave_a3", "a4", "instrument", "transpose_shift",
+        )
 
         /** App colour swatches: gold, cyan, red, green, blue, purple, white. */
         val ACCENTS = intArrayOf(

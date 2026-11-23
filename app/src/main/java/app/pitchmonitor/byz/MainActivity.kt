@@ -94,6 +94,9 @@ class MainActivity : ThemedActivity() {
             setOnItemSelectedListener { openHub(pageOf(it.itemId)); false }
         }
         applyNavMode()
+        setupSwipeToMenu()
+        btnReset.maxLines = 1
+        btnReset.setAutoSizeTextTypeUniformWithConfiguration(7, 12, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
         btnScale.setOnClickListener { pickScale() }
         findViewById<View>(R.id.btnDown1).setOnClickListener { setOffset(prefs.niOffset - 1) }
         findViewById<View>(R.id.btnDown6).setOnClickListener { setOffset(prefs.niOffset - 6) }
@@ -268,11 +271,52 @@ class MainActivity : ThemedActivity() {
      * Wide screens (landscape, tablets): a permanent navigation rail on the right instead.
      */
     private fun applyNavMode() {
-        val wide = resources.configuration.screenWidthDp >= 600
+        val wide = isWide()
         findViewById<View>(R.id.mainRail).visibility = if (wide) View.VISIBLE else View.GONE
         findViewById<View>(R.id.railLine).visibility = if (wide) View.VISIBLE else View.GONE
         findViewById<View>(R.id.btnMenu).visibility = if (wide) View.GONE else View.VISIBLE
     }
+
+    /**
+     * Swipe to open the navigation panel (phones): in from the right edge of the graph, or a
+     * left swipe on the title bar. The middle of the right edge is excluded from the system Back
+     * gesture so the swipe reaches the app.
+     */
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
+    private fun setupSwipeToMenu() {
+        val d = resources.displayMetrics.density
+        val edge = View(this).apply { contentDescription = getString(R.string.menu) }
+        (graph.parent as android.widget.FrameLayout).addView(edge,
+            android.widget.FrameLayout.LayoutParams((20 * d).toInt(), ViewGroup.LayoutParams.MATCH_PARENT, android.view.Gravity.END))
+        edge.addOnLayoutChangeListener { v, _, top, _, bottom, _, _, _, _ ->
+            val band = (200 * d).toInt().coerceAtMost(bottom - top)
+            val y0 = (bottom - top - band) / 2
+            v.systemGestureExclusionRects = listOf(android.graphics.Rect(0, y0, v.width, y0 + band))
+        }
+        var downX = 0f
+        var fired = false
+        edge.setOnTouchListener { v, e ->
+            when (e.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> { downX = e.rawX; fired = false; true }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    if (!fired && downX - e.rawX > 32 * d && !isWide()) { fired = true; openMenu() }
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP -> { if (!fired) v.performClick(); true }
+                else -> true
+            }
+        }
+        val fling = android.view.GestureDetector(this, object : android.view.GestureDetector.SimpleOnGestureListener() {
+            override fun onDown(e: android.view.MotionEvent) = true
+            override fun onFling(e1: android.view.MotionEvent?, e2: android.view.MotionEvent, vx: Float, vy: Float): Boolean {
+                if (e1 != null && e1.x - e2.x > 48 * d && kotlin.math.abs(vx) > kotlin.math.abs(vy) && !isWide()) { openMenu(); return true }
+                return false
+            }
+        })
+        findViewById<View>(R.id.topBar).setOnTouchListener { v, e -> fling.onTouchEvent(e); if (e.action == android.view.MotionEvent.ACTION_UP) v.performClick(); true }
+    }
+
+    private fun isWide() = resources.configuration.screenWidthDp >= 600
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)

@@ -97,6 +97,20 @@ buttons and choice chips, each with a one-line description; 4 dp spacing grid.
 Not yet verified on a device: landscape/tablet rail (only a phone in portrait was available),
 predictive back animation, the email button.
 
+## Presets, graph schemes and swipe (2026-11-23)
+
+- **Settings presets**: save the Settings page under a name and load it later (confirmation before
+  loading). Presets hold detection, view, tuner, tempo, buttons, notes/scales and lines/tuning; not
+  the look, the language or the base position. They live in their own file, so DEFAULT keeps them.
+- **DEFAULT** is a text button and asks before resetting.
+- **Graph colour schemes**: App colour (default, follows the app colour), Classic, High contrast,
+  Warm. "Lock graph colours" keeps the current graph colours when the app colour changes.
+- **Language** moved to Appearance; "Follow the phone" is now "System".
+- The "Tempo" button switch was removed: since BPM left the main screen it did nothing.
+- **Swipe**: on phones, swipe in from the right edge of the graph or swipe left on the title bar to
+  open the navigation panel (the middle of the right edge is excluded from the system Back gesture).
+  Swipe right to close it.
+
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 
 Compared on the phone with the owner's 1.6.0 screenshots:

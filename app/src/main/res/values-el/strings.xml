@@ -5,7 +5,7 @@
     <string name="scale">Κλίμακα</string>
     <string name="hold">ΠΑΥΣΗ</string>
     <string name="base_voice">Βάση =\nφωνή</string>
-    <string name="reset">Αρχικό</string>
+    <string name="reset">Επαναφορά</string>
     <string name="base_reset_hint">Βάση: πατήστε για επιστροφή στη φυσική βάση</string>
     <string name="back_to_live">✕  Επιστροφή σε ζωντανό</string>
     <string name="mic_needed">Χρειάζεται το μικρόφωνο για να δείξει τον τόνο σας</string>
@@ -85,7 +85,7 @@
     <string name="inst_f">F</string>
     <string name="appearance">Εμφάνιση</string>
     <string name="theme">Θέμα</string>
-    <string name="theme_system">Όπως το κινητό</string>
+    <string name="theme_system">Σύστημα</string>
     <string name="theme_dark">Σκούρο</string>
     <string name="theme_black">Μαύρο (AMOLED)</string>
     <string name="theme_light">Ανοιχτό</string>
@@ -137,8 +137,6 @@
     <string name="btn_hold_desc">Παγώνει το γράφημα για να δείτε πίσω.</string>
     <string name="btn_scale">Κουμπί κλίμακας</string>
     <string name="btn_scale_desc">Το όνομα της κλίμακας στην κάτω μπάρα.</string>
-    <string name="btn_tempo">Κουμπί ρυθμού</string>
-    <string name="btn_tempo_desc">Από την 1.6.0· η κύρια οθόνη δεν έχει κουμπί ρυθμού.</string>
     <string name="btn_transport">Εγγραφή, αναπαραγωγή, διακοπή</string>
     <string name="btn_transport_desc">Κουμπιά στο κάτω μέρος του γραφήματος.</string>
     <string name="sec_notes">Φθόγγοι και κλίμακες</string>
@@ -173,4 +171,23 @@
     <string name="nav_settings">Ρυθμίσεις</string>
     <string name="nav_appearance">Εμφάνιση</string>
     <string name="nav_recordings">Αρχεία</string>
+    <string name="reset_title">Επαναφορά ρυθμίσεων;</string>
+    <string name="reset_yes">Επαναφορά</string>
+    <string name="presets">Προεπιλογές χρήσης</string>
+    <string name="preset_load">Φόρτωση %1$s</string>
+    <string name="preset_load_confirm">Να αντικατασταθούν οι τρέχουσες ρυθμίσεις με αυτές;</string>
+    <string name="preset_load_yes">Φόρτωση</string>
+    <string name="preset_save">Αποθήκευση ρυθμίσεων ως προεπιλογή</string>
+    <string name="preset_save_desc">Δώστε όνομα για τη χρήση, π.χ. «Μελέτη», «Εκκλησία», «Μάθημα».</string>
+    <string name="preset_name_hint">Όνομα</string>
+    <string name="save">Αποθήκευση</string>
+    <string name="preset_saved">Αποθηκεύτηκε: «%1$s»</string>
+    <string name="graph_scheme">Συνδυασμός χρωμάτων</string>
+    <string name="graph_scheme_desc">Η επιλογή αντικαθιστά τα χρώματα που διαλέξατε παρακάτω.</string>
+    <string name="scheme_app">Χρώμα εφαρμογής</string>
+    <string name="scheme_classic">Κλασικός</string>
+    <string name="scheme_contrast">Υψηλή αντίθεση</string>
+    <string name="scheme_warm">Ζεστός</string>
+    <string name="graph_lock">Κλείδωμα χρωμάτων γραφήματος</string>
+    <string name="graph_lock_desc">Να μένουν ίδια όταν αλλάζει το χρώμα εφαρμογής.</string>
 </resources>

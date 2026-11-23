@@ -159,7 +159,7 @@
             <TextView
                 android:id="@+id/btnBaseReset"
                 style="@style/Chip"
-                android:layout_weight="1.25"
+                android:layout_weight="1.6"
                 android:contentDescription="Back to the natural base"
                 android:text="@string/reset"
                 android:textSize="12dp" />
@@ -185,7 +185,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp"
-                android:layout_weight="1.6"
+                android:layout_weight="1.4"
                 android:gravity="center"
                 android:textSize="10.5dp" />
 

@@ -69,7 +69,7 @@ object Colors {
  * corrected to at least 4.5:1 against the surfaces it sits on, and every control/graphic role to
  * at least 3:1 (WCAG 2.1 AA).
  */
-class Palette private constructor(base: Base, val accent: Int) {
+class Palette private constructor(private val base: Base, val accent: Int) {
     class Base(
         val dark: Boolean,
         val surface: Int, val surfaceContainer: Int, val surfaceContainerHigh: Int,
@@ -136,6 +136,43 @@ class Palette private constructor(base: Base, val accent: Int) {
     val play = Colors.ensure(0xFF43A047.toInt(), Colors.AA_UI, graphBg)
     val stop = Colors.ensure(base.onSurfaceVariant, Colors.AA_UI, graphBg)
 
+    /**
+     * Graph colours of a scheme. [GRAPH_APP] follows the app colour; the others are fixed looks.
+     * The pitch trace is always at least 3:1 against the graph.
+     */
+    fun graph(scheme: String): GraphColors {
+        val bg = graphBg
+        val classicScale = base.defaultScale
+        val classicChrom = base.defaultChromatic
+        fun chrom(c: Int, g: Int, natural: Int, sharp: Int) =
+            IntArray(12) { pc -> when (pc) { 0 -> c; 7 -> g; 2, 4, 5, 9, 11 -> natural; else -> sharp } }
+        return when (scheme) {
+            GRAPH_CLASSIC -> GraphColors(defaultPitch, base.defaultBeats, base.defaultMetronome, classicScale, classicChrom)
+            GRAPH_CONTRAST -> {
+                val strong = Colors.ensure(onSurface, 7.0, bg)
+                val mid = Colors.blend(strong, bg, 0.5f)
+                val faint = Colors.blend(strong, bg, 0.78f)
+                GraphColors(Colors.ensure(accent, Colors.AA_TEXT, bg), mid, accent,
+                    intArrayOf(strong, mid, mid, mid, mid, mid, mid, faint), chrom(strong, mid, mid, faint))
+            }
+            GRAPH_WARM -> {
+                val tonic = Colors.blend(0xFFC8A050.toInt(), bg, 0.25f)
+                val deg = Colors.blend(0xFF8C6A3C.toInt(), bg, if (dark) 0.45f else 0.55f)
+                val semi = Colors.blend(0xFF8C6A3C.toInt(), bg, 0.8f)
+                GraphColors(Colors.ensure(0xFFE8A000.toInt(), Colors.AA_UI, bg), semi, 0xFF8D2C1E.toInt(),
+                    intArrayOf(tonic, deg, deg, deg, deg, deg, deg, semi), chrom(tonic, deg, deg, semi))
+            }
+            else -> {
+                // Follow the app colour: pitch and the base line take its hue.
+                val tonic = Colors.ensure(Colors.blend(accent, bg, 0.35f), 1.8, bg)
+                val dominant = Colors.blend(accent, classicChrom[2], 0.7f)
+                val scale = classicScale.copyOf().also { it[0] = tonic }
+                GraphColors(Colors.ensure(accent, Colors.AA_UI, bg), base.defaultBeats, Colors.blend(accent, bg, 0.3f),
+                    scale, chrom(tonic, dominant, classicChrom[2], classicChrom[1]))
+            }
+        }
+    }
+
     /** A rounded, pressable shape with a ripple in this palette. */
     fun chip(stroke: Int = chipStroke, fill: Int = chipFill, pressed: Int = chipPressed, radiusDp: Float = 10f, dp: Float): Drawable {
         val shape = GradientDrawable().apply {
@@ -161,6 +198,12 @@ class Palette private constructor(base: Base, val accent: Int) {
         RippleDrawable(ColorStateList.valueOf(Colors.alpha(onSurface, 0.14f)), null, mask)
 
     companion object {
+        const val GRAPH_APP = "app"
+        const val GRAPH_CLASSIC = "classic"
+        const val GRAPH_CONTRAST = "contrast"
+        const val GRAPH_WARM = "warm"
+        val GRAPH_SCHEMES = listOf(GRAPH_APP, GRAPH_CLASSIC, GRAPH_CONTRAST, GRAPH_WARM)
+
         const val SYSTEM = "system"
         const val DARK = "dark"
         const val BLACK = "black"
@@ -230,6 +273,9 @@ class Palette private constructor(base: Base, val accent: Int) {
         )
     }
 }
+
+/** Colours of the pitch graph: trace, beats, metronome, scale degrees (tonic..7th, semitone), chromatic C..B. */
+class GraphColors(val pitch: Int, val beats: Int, val metronome: Int, val scale: IntArray, val chromatic: IntArray)
 
 /** App language (English by default, or Greek), independent of the phone's language. */
 object Lang {

@@ -43,7 +43,7 @@ class HubActivity : ThemedActivity() {
     private lateinit var rail: NavigationRailView
     private lateinit var pages: FrameLayout
     private lateinit var topTitle: TextView
-    private lateinit var topAction: ImageButton
+    private lateinit var topAction: com.google.android.material.button.MaterialButton
     private lateinit var topBar: LinearLayout
     private lateinit var selectionBar: LinearLayout
     private var current = PAGE_SETTINGS
@@ -118,8 +118,8 @@ class HubActivity : ThemedActivity() {
             isSingleLine = true
         }
         topBar.addView(topTitle, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
-        topAction = iconButton(R.drawable.ic_restore, R.string.default_) {}
-        topBar.addView(topAction)
+        topAction = kit.button("", filled = false) {}.apply { minHeight = px(40f); insetTop = 0; insetBottom = 0 }
+        topBar.addView(topAction, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, px(40f)).apply { marginEnd = px(8f) })
         selectionBar = buildSelectionBar()
         val bars = FrameLayout(this)
         bars.addView(topBar, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(64f)))
@@ -238,25 +238,24 @@ class HubActivity : ThemedActivity() {
         }
     }
 
+    /** The text button at the top right: "Default" on Settings, "Import" on Recordings. */
     private fun configureTopAction(page: String) {
         when (page) {
             PAGE_SETTINGS -> {
                 topAction.visibility = View.VISIBLE
-                topAction.setImageResource(R.drawable.ic_restore)
-                topAction.contentDescription = getString(R.string.default_)
+                topAction.setText(R.string.default_)
                 topAction.setOnClickListener {
-                    style(dialog().setTitle(R.string.default_).setMessage(R.string.reset_confirm)
-                        .setPositiveButton(R.string.default_) { _, _ -> prefs.resetToDefaults(); recreate() }
+                    style(dialog().setTitle(R.string.reset_title).setMessage(R.string.reset_confirm)
+                        .setPositiveButton(R.string.reset_yes) { _, _ -> prefs.resetToDefaults(); recreate() }
                         .setNegativeButton(android.R.string.cancel, null).show())
                 }
             }
             PAGE_RECORDINGS -> {
                 topAction.visibility = View.VISIBLE
-                topAction.setImageResource(R.drawable.ic_import)
-                topAction.contentDescription = getString(R.string.import_)
+                topAction.setText(R.string.import_)
                 topAction.setOnClickListener { finishWith(ACTION_IMPORT) }
             }
-            else -> topAction.visibility = View.INVISIBLE
+            else -> topAction.visibility = View.GONE
         }
     }
 
@@ -287,6 +286,8 @@ class HubActivity : ThemedActivity() {
 
     private fun buildSettings() = scrollingPage { c ->
         val k = kit
+        k.section(c, getString(R.string.presets))
+        k.card(c).also { card -> fillPresets(card) }
         k.section(c, getString(R.string.sec_detection))
         k.card(c).also { card ->
             k.sliderRow(card, getString(R.string.threshold), getString(R.string.threshold_desc), 0f, 50f, 0.25f, prefs.threshold,
@@ -337,7 +338,6 @@ class HubActivity : ThemedActivity() {
         k.card(c).also { card ->
             k.switchRow(card, getString(R.string.btn_hold), getString(R.string.btn_hold_desc), prefs.showHold) { prefs.showHold = it }
             k.switchRow(card, getString(R.string.btn_scale), getString(R.string.btn_scale_desc), prefs.showScale) { prefs.showScale = it }
-            k.switchRow(card, getString(R.string.btn_tempo), getString(R.string.btn_tempo_desc), prefs.showTempo) { prefs.showTempo = it }
             k.switchRow(card, getString(R.string.btn_transport), getString(R.string.btn_transport_desc), !prefs.hideTransport) { prefs.hideTransport = !it }
         }
 
@@ -368,14 +368,63 @@ class HubActivity : ThemedActivity() {
                 { val v = it.toInt(); if (v > 0) "+$v" else v.toString() }) { prefs.transposeShift = it.toInt() }
         }
 
-        k.section(c, getString(R.string.language))
-        k.card(c).also { card ->
-            val langs = listOf(Lang.EN, Lang.EL)
-            k.segmentedRow(card, getString(R.string.language), getString(R.string.language_desc), listOf("English", "Ελληνικά"),
-                langs.indexOf(prefs.language).coerceAtLeast(0)) {
-                if (prefs.language != langs[it]) { prefs.language = langs[it]; recreate() }
+    }
+
+    /** Saved setting presets: tap to load, the bin to delete, the last row saves the current settings. */
+    private fun fillPresets(card: LinearLayout) {
+        val p = palette
+        for (name in prefs.presetNames()) {
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(px(16f), px(6f), px(4f), px(6f))
+                minimumHeight = px(56f)
+                background = p.ripple()
+                contentDescription = getString(R.string.preset_load, name)
+                setOnClickListener {
+                    style(dialog().setTitle(name).setMessage(R.string.preset_load_confirm)
+                        .setPositiveButton(R.string.preset_load_yes) { _, _ -> prefs.loadPreset(name); recreate() }
+                        .setNegativeButton(android.R.string.cancel, null).show())
+                }
             }
+            row.addView(kit.icon(R.drawable.ic_settings_tune, p.onSurfaceVariant), LinearLayout.LayoutParams(px(24f), px(24f)).apply { marginEnd = px(16f) })
+            row.addView(kit.titleText(name), LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+            row.addView(iconButton(R.drawable.ic_delete, R.string.delete) {
+                style(dialog().setMessage(getString(R.string.delete_one, name))
+                    .setPositiveButton(R.string.delete) { _, _ -> prefs.deletePreset(name); rebuild(PAGE_SETTINGS) }
+                    .setNegativeButton(android.R.string.cancel, null).show())
+            })
+            card.addView(row)
         }
+        kit.actionRow(card, R.drawable.ic_check, getString(R.string.preset_save), getString(R.string.preset_save_desc)) { askPresetName() }
+    }
+
+    private fun askPresetName() {
+        val input = EditText(this).apply { isSingleLine = true; hint = getString(R.string.preset_name_hint) }
+        val box = FrameLayout(this).apply { setPadding(px(24f), px(8f), px(24f), 0); addView(input) }
+        val d = dialog().setTitle(R.string.preset_save).setView(box)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val name = input.text.toString().trim()
+                if (name.isNotEmpty()) {
+                    prefs.savePreset(name)
+                    Toast.makeText(this, getString(R.string.preset_saved, name), Toast.LENGTH_SHORT).show()
+                    rebuild(PAGE_SETTINGS)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null).show()
+        style(d); tintTree(box)
+    }
+
+    /** Rebuilds one page in place (keeps the scroll position). */
+    private fun rebuild(page: String) {
+        val old = built.remove(page) ?: return
+        val y = (old as? ScrollView)?.scrollY ?: 0
+        val index = pages.indexOfChild(old)
+        pages.removeView(old)
+        val fresh = when (page) { PAGE_APPEARANCE -> buildAppearance(); PAGE_RECORDINGS -> buildRecordings(); else -> buildSettings() }
+        built[page] = fresh
+        if (index >= 0) pages.addView(fresh, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        (fresh as? ScrollView)?.post { fresh.scrollTo(0, y) }
     }
 
     private fun zoom(v: Float): String {
@@ -441,7 +490,7 @@ class HubActivity : ThemedActivity() {
                     }
                     contentDescription = getString(R.string.app_colour) + String.format(Locale.US, " #%06X", color and 0xFFFFFF) + if (on) " ✓" else ""
                     if (on) addView(k.icon(R.drawable.ic_check, Colors.on(color)), FrameLayout.LayoutParams(px(22f), px(22f), Gravity.CENTER))
-                    setOnClickListener { if (prefs.accent != color) { prefs.accent = color; recreate() } }
+                    setOnClickListener { if (prefs.accent != color) { prefs.changeAccent(color); recreate() } }
                 }
                 row.addView(swatch, ViewGroup.LayoutParams(px(44f), px(44f)))
             }
@@ -451,6 +500,13 @@ class HubActivity : ThemedActivity() {
 
         k.section(c, getString(R.string.graph_colours))
         k.card(c).also { card ->
+            val schemes = Palette.GRAPH_SCHEMES
+            k.chipsRow(card, getString(R.string.graph_scheme), getString(R.string.graph_scheme_desc),
+                listOf(getString(R.string.scheme_app), getString(R.string.scheme_classic), getString(R.string.scheme_contrast), getString(R.string.scheme_warm)),
+                schemes.indexOf(prefs.graphScheme).coerceAtLeast(0)) {
+                if (prefs.graphScheme != schemes[it]) { prefs.resetColors(); prefs.graphScheme = schemes[it]; rebuild(PAGE_APPEARANCE) }
+            }
+            k.switchRow(card, getString(R.string.graph_lock), getString(R.string.graph_lock_desc), prefs.graphLock) { prefs.graphLock = it }
             colorRow(card, getString(R.string.color_pitch), "color_pitch", { prefs.colorPitch }) { prefs.colorPitch = it }
             colorRow(card, getString(R.string.color_beats), "color_beats", { prefs.colorBeats }) { prefs.colorBeats = it }
             colorRow(card, getString(R.string.color_metronome), "color_metronome", { prefs.colorMetronome }) { prefs.colorMetronome = it }
@@ -465,6 +521,15 @@ class HubActivity : ThemedActivity() {
             }
             k.actionRow(card, R.drawable.ic_restore, getString(R.string.reset_colours), getString(R.string.reset_colours_desc)) {
                 prefs.resetColors(); recreate()
+            }
+        }
+
+        k.section(c, getString(R.string.language))
+        k.card(c).also { card ->
+            val langs = listOf(Lang.EN, Lang.EL)
+            k.segmentedRow(card, getString(R.string.language), getString(R.string.language_desc), listOf("English", "Ελληνικά"),
+                langs.indexOf(prefs.language).coerceAtLeast(0)) {
+                if (prefs.language != langs[it]) { prefs.language = langs[it]; recreate() }
             }
         }
     }

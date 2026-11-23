@@ -47,6 +47,15 @@ class ContrastTest {
         assertTrue(failures.joinToString("\n"), failures.isEmpty())
     }
 
+    @Test fun graphSchemesKeepThePitchVisible() {
+        for (t in themes) for (accent in Prefs.ACCENTS) for (scheme in Palette.GRAPH_SCHEMES) {
+            val p = Palette.of(t, accent, night = false)
+            val g = p.graph(scheme)
+            assertTrue("$t $scheme", Colors.contrast(g.pitch, p.graphBg) >= Colors.AA_UI)
+            assertEquals(8, g.scale.size); assertEquals(12, g.chromatic.size)
+        }
+    }
+
     @Test fun contrastFormula() {
         assertEquals(21.0, Colors.contrast(0xFF000000.toInt(), 0xFFFFFFFF.toInt()), 0.01)
         assertEquals(1.0, Colors.contrast(0xFF777777.toInt(), 0xFF777777.toInt()), 0.001)

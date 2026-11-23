@@ -346,10 +346,6 @@ class HubActivity : ThemedActivity() {
 
         k.section(c, getString(R.string.sec_notes))
         k.card(c).also { card ->
-            val genres = Genre.entries
-            k.segmentedRow(card, getString(R.string.genre), getString(R.string.genre_desc),
-                listOf(getString(R.string.genre_sticheraric), getString(R.string.genre_heirmologic)),
-                genres.indexOf(prefs.genre)) { prefs.genreName = genres[it].name }
             k.chipsRow(card, getString(R.string.note_name), getString(R.string.note_name_desc),
                 listOf(getString(R.string.names_english), getString(R.string.names_solfege), "ΝΗ, ΠΑ, ΒΟΥ…"), prefs.noteNames) { prefs.noteNames = it }
             val modes = listOf(Catalog.EU_ALL, Catalog.EU_C_MAJOR, Catalog.EU_NONE)

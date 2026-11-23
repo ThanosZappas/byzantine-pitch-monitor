@@ -113,26 +113,27 @@ predictive back animation, the email button.
 
 ## Base and dominant notes (2026-11-23)
 
-- Only the **base** line has its own colour; all other lines share one colour.
-- **Highlight dominant notes** (Appearance → Graph colours, off by default) tints the δεσπόζοντες of
-  the selected mode slightly.
-- **Melody genre** (Settings → Notes and scales): Sticheraric (default) or Heirmologic. Where a mode
-  differs, its base and dominants follow the genre. Table (sticheraric / heirmologic):
+- Only the **base** line has its own colour; with **Highlight dominant notes** (Appearance, on by
+  default) the δεσπόζοντες are tinted and a little thicker.
+- **Melody genre** is chosen in the scale picker on the main screen (Ειρμολ. / Στιχηρ. / Παπαδ.); it
+  applies at once and is shown under the mode name on the scale button.
 
-| Mode | Base | Dominants |
-| --- | --- | --- |
-| Α' | Πα | Πα Γα / Πα Δι |
-| Β' | Δι | Δι Νη Κε (not stated in the source; kept from 1.6.0) |
-| Γ' | Γα | Γα Πα Κε |
-| Δ' | Πα / Βου | Πα Βου Δι / Βου Δι |
-| Πλ.Α' | Πα | Πα Δι Κε / Κε Νη |
-| Πλ.Β' | Πα | Πα Δι Κε / Βου Δι |
-| Βαρύς | Γα | Γα Δι Ζω (not stated in the source; kept from 1.6.0) |
-| Πλ.Δ' | Νη | Νη Βου Δι |
-| Πλ.Δ' εκ του Γα | Γα | Γα Δι Ζω |
+| Mode | Heirmologic | Sticheraric | Papadic |
+| --- | --- | --- | --- |
+| Α' | Πα: Πα Δι | Πα: Πα Γα | Πα: Πα Γα |
+| Β' | Δι: Δι Βου | Δι: Δι Βου | Δι: Δι Ζω Βου |
+| Γ' | Γα: Γα Κε Πα | same | same |
+| Δ' | Βου: Βου Δι Ζω | Πα: Πα Βου Δι | Δι: Δι Ζω Βου |
+| Πλ.Α' | Κε: Κε Νη | Πα: Πα Δι Κε | Πα: Πα Δι Κε |
+| Πλ.Β' | Πα: Βου Δι | Πα: Πα Δι Κε | Πα: Πα Δι Κε |
+| Βαρύς | Γα: Γα Δι Ζω | same | same (diatonic papadic form not modelled) |
+| Πλ.Δ' | Νη: Νη Βου Δι | same | same |
+| Πλ.Δ' εκ του Γα | Γα: Γα Δι Ζω | same | same |
 
-  Sources: Apostoliki Diakonia, "Οι ήχοι"; IEMA thesaurus (Α'); the owner (Γ'). Δ' sticheraric now has
-  its base on Πα (1.6.0 had Δι, the papadic base). Please correct any value you sing differently.
+  Sources: N. Kastanas, *Byzantine Music Simplified* (all modes; genre splits for Α', Πλ.Α', Δ');
+  Apostoliki Diakonia, "Οι ήχοι"; IEMA thesaurus (Α'); University of Macedonia thesis (Β' papadic);
+  P. Galanis (Πλ.Β' heirmologic, Πλ.Δ' εκ του Γα). Where a source gives no genre split, the same
+  values are used for all three genres.
 
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 

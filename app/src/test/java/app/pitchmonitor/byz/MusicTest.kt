@@ -29,13 +29,14 @@ class MusicTest {
         assertEquals(Byzantine.PA, d4.baseFor(Genre.STICHERARIC))
         assertEquals(Byzantine.VOU, d4.baseFor(Genre.HEIRMOLOGIC))
         val g3 = Byzantine.mode("Ήχος Γ'")!!
-        assertArrayEquals(intArrayOf(Byzantine.GA, Byzantine.PA, Byzantine.KE), g3.dominants)
-        assertFalse(g3.genresDiffer)
+        assertArrayEquals(intArrayOf(Byzantine.GA, Byzantine.KE, Byzantine.PA), g3.dominants)
+        assertEquals(Byzantine.DI, d4.baseFor(Genre.PAPADIC))
+        assertEquals(Byzantine.KE, Byzantine.mode("Ήχος Πλ.Α'")!!.baseFor(Genre.HEIRMOLOGIC))
     }
 
     @Test fun onlyBaseStandsOutByDefault() {
         val m = Byzantine.mode("Ήχος Α'")!!
-        val g = ByzantineGrid(m, 0.0, Palette.DARK_CHROMATIC)
+        val g = ByzantineGrid(m, 0.0, Palette.DARK_CHROMATIC, highlightDominants = false)
         val colors = g.lines(-1.0, 1199.0).filter { !it.strong }.map { it.color }.toSet()
         assertEquals(1, colors.size)
         val hi = ByzantineGrid(m, 0.0, Palette.DARK_CHROMATIC, highlightDominants = true)

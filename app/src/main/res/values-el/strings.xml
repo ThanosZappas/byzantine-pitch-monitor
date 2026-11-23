@@ -191,9 +191,15 @@
     <string name="graph_lock">Κλείδωμα χρωμάτων γραφήματος</string>
     <string name="graph_lock_desc">Να μένουν ίδια όταν αλλάζει το χρώμα εφαρμογής.</string>
     <string name="genre">Είδος μέλους</string>
-    <string name="genre_desc">Βάση και δεσπόζοντες κάθε ήχου όπως στα στιχηραρικά ή στα ειρμολογικά, όπου διαφέρουν (π.χ. Δ\': Πα ή Βου).</string>
     <string name="genre_sticheraric">Στιχηραρικό</string>
     <string name="genre_heirmologic">Ειρμολογικό</string>
     <string name="highlight_dominants">Επισήμανση δεσποζόντων</string>
     <string name="highlight_dominants_desc">Ελαφρώς άλλο χρώμα στους δεσπόζοντες του ήχου. Ανενεργό: ξεχωρίζει μόνο η βάση.</string>
+    <string name="genre_papadic">Παπαδικό</string>
+    <string name="genre_heirm_short">Ειρμολογικό</string>
+    <string name="genre_stich_short">Στιχηραρικό</string>
+    <string name="genre_pap_short">Παπαδικό</string>
+    <string name="genre_heirm_tab">Ειρμολ.</string>
+    <string name="genre_stich_tab">Στιχηρ.</string>
+    <string name="genre_pap_tab">Παπαδ.</string>
 </resources>

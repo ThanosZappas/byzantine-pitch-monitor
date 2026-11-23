@@ -80,23 +80,24 @@ class Genus(val startDegree: Int, val startMoria: Int, val steps: IntArray) {
 }
 
 /** Melody genre (είδος μέλους): a mode's base and dominant notes can differ between them. */
-enum class Genre { STICHERARIC, HEIRMOLOGIC }
+enum class Genre { HEIRMOLOGIC, STICHERARIC, PAPADIC }
 
-/**
- * A mode: its genus, and its base (βάση) and dominant notes (δεσπόζοντες) for sticheraric melodies,
- * with heirmologic values where they differ.
- */
+/** Base note and dominant notes (δεσπόζοντες) of a mode in one genre. */
+class Variant(val base: Int, vararg val dominants: Int)
+
+/** A mode: its genus, and its base and dominants per genre (heirmologic/papadic default to sticheraric). */
 class ByzMode(
     val title: String,
     val genus: Genus,
-    val base: Int,
-    val dominants: IntArray,
-    private val heirmBase: Int = base,
-    private val heirmDominants: IntArray = dominants,
+    private val stich: Variant,
+    private val heirm: Variant = stich,
+    private val pap: Variant = stich,
 ) {
-    fun baseFor(g: Genre) = if (g == Genre.HEIRMOLOGIC) heirmBase else base
-    fun dominantsFor(g: Genre) = if (g == Genre.HEIRMOLOGIC) heirmDominants else dominants
-    val genresDiffer: Boolean get() = heirmBase != base || !heirmDominants.contentEquals(dominants)
+    fun variant(g: Genre) = when (g) { Genre.HEIRMOLOGIC -> heirm; Genre.PAPADIC -> pap; else -> stich }
+    fun baseFor(g: Genre) = variant(g).base
+    fun dominantsFor(g: Genre): IntArray = variant(g).dominants
+    val base: Int get() = stich.base
+    val dominants: IntArray get() = stich.dominants
 }
 
 object Byzantine {
@@ -109,17 +110,23 @@ object Byzantine {
     const val NI_NATURAL_HZ = 261.6255653
 
     val MODES = listOf(
-        // Sources: Apostoliki Diakonia "Οι ήχοι" (Α', Γ', Δ', Πλ.Α', Πλ.Β', Πλ.Δ'), IEMA thesaurus (Α'),
-        // owner (Γ': dominants Πα, Κε). Β' and Βαρύς: not stated there; kept from 1.6.0.
-        ByzMode("Ήχος Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, GA), heirmDominants = intArrayOf(PA, DI)),
-        ByzMode("Ήχος Β'", Genus.SOFT_CHROMATIC_NI, DI, intArrayOf(DI, NI, KE)),
-        ByzMode("Ήχος Γ'", Genus.ENHARMONIC_GA, GA, intArrayOf(GA, PA, KE)),
-        ByzMode("Ήχος Δ'", Genus.DIATONIC_NI, PA, intArrayOf(PA, VOU, DI), heirmBase = VOU, heirmDominants = intArrayOf(VOU, DI)),
-        ByzMode("Ήχος Πλ.Α'", Genus.DIATONIC_NI, PA, intArrayOf(PA, DI, KE), heirmDominants = intArrayOf(KE, NI)),
-        ByzMode("Ήχος Πλ.Β'", Genus.HARD_CHROMATIC_PA, PA, intArrayOf(PA, DI, KE), heirmDominants = intArrayOf(VOU, DI)),
-        ByzMode("Ήχος Βαρύς", Genus.ENHARMONIC_GA, GA, intArrayOf(GA, DI, ZO)),
-        ByzMode("Ήχος Πλ.Δ'", Genus.DIATONIC_NI, NI, intArrayOf(NI, VOU, DI)),
-        ByzMode("Ήχος Πλ.Δ' εκ του Γα", Genus.DIATONIC_GA, GA, intArrayOf(GA, DI, ZO)),
+        // Sources: N. Kastanas, "Byzantine Music Simplified" (all modes; genre splits for Α', Πλ.Α', Δ');
+        // Apostoliki Diakonia "Οι ήχοι" (Α', Δ', Πλ.Α', Πλ.Β', Πλ.Δ'); IEMA thesaurus (Α');
+        // University of Macedonia thesis (Β' papadic); P. Galanis (Πλ.Β', Πλ.Δ' εκ του Γα).
+        ByzMode("Ήχος Α'", Genus.DIATONIC_NI,
+            stich = Variant(PA, PA, GA), heirm = Variant(PA, PA, DI), pap = Variant(PA, PA, GA)),
+        ByzMode("Ήχος Β'", Genus.SOFT_CHROMATIC_NI,
+            stich = Variant(DI, DI, VOU), pap = Variant(DI, DI, ZO, VOU)),
+        ByzMode("Ήχος Γ'", Genus.ENHARMONIC_GA, stich = Variant(GA, GA, KE, PA)),
+        ByzMode("Ήχος Δ'", Genus.DIATONIC_NI,
+            stich = Variant(PA, PA, VOU, DI), heirm = Variant(VOU, VOU, DI, ZO), pap = Variant(DI, DI, ZO, VOU)),
+        ByzMode("Ήχος Πλ.Α'", Genus.DIATONIC_NI,
+            stich = Variant(PA, PA, DI, KE), heirm = Variant(KE, KE, NI), pap = Variant(PA, PA, DI, KE)),
+        ByzMode("Ήχος Πλ.Β'", Genus.HARD_CHROMATIC_PA,
+            stich = Variant(PA, PA, DI, KE), heirm = Variant(PA, VOU, DI), pap = Variant(PA, PA, DI, KE)),
+        ByzMode("Ήχος Βαρύς", Genus.ENHARMONIC_GA, stich = Variant(GA, GA, DI, ZO)),
+        ByzMode("Ήχος Πλ.Δ'", Genus.DIATONIC_NI, stich = Variant(NI, NI, VOU, DI)),
+        ByzMode("Ήχος Πλ.Δ' εκ του Γα", Genus.DIATONIC_GA, stich = Variant(GA, GA, DI, ZO)),
     )
 
     fun mode(title: String): ByzMode? = MODES.firstOrNull { it.title == title }
@@ -148,7 +155,8 @@ class ByzantineGrid(
 ) : Grid {
     private val base = mode.baseFor(genre)
     private val dominants = mode.dominantsFor(genre)
-    private val dominantColor = blendColor(chromatic[2], chromatic[0], 0.45f)
+    private val dominantColor = blendColor(chromatic[2], chromatic[0], 0.65f)
+    private val dominantLabel = blendColor(labels.normal, labels.strong, 0.5f)
 
     override val showsMoria get() = true
     override val monoLabels get() = true
@@ -167,9 +175,9 @@ class ByzantineGrid(
                 dom -> dominantColor
                 else -> chromatic[2]
             }
-            val width = if (base) 1.3f else if (dom) 0.9f else 0.7f
+            val width = if (base) 1.3f else if (dom) 1.05f else 0.7f
             val name = Byzantine.NAMES[d]
-            out += GridLine(c, name, name, color, width, if (base) labels.strong else labels.normal, base)
+            out += GridLine(c, name, name, color, width, if (base) labels.strong else if (dom) dominantLabel else labels.normal, base)
         }
         out.sortBy { it.cents }
         return out

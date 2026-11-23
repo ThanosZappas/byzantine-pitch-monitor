@@ -139,6 +139,7 @@ class MainActivity : ThemedActivity() {
             "appearance" -> openHub(HubActivity.PAGE_APPEARANCE)
             "recordings" -> openHub(HubActivity.PAGE_RECORDINGS)
             "menu" -> openMenu()
+            "scales" -> graph.post { pickScale() }
         }
     }
 
@@ -197,7 +198,7 @@ class MainActivity : ThemedActivity() {
             showTuner = prefs.showTuner, showHz = prefs.showHz, smoothing = prefs.smoothing,
             autoScroll = prefs.autoScroll, scrollSpeed = prefs.scrollSpeed,
         )
-        btnScale.text = prefs.scale
+        btnScale.text = if (Catalog.isByzantine(prefs.scale)) prefs.scale + "\n" + getString(genreShort(prefs.genre)) else prefs.scale
         btnScale.visibility = if (prefs.showScale) View.VISIBLE else View.INVISIBLE
         btnHold.visibility = if (prefs.showHold) View.VISIBLE else View.GONE
         transport.visibility = if (prefs.hideTransport) View.GONE else View.VISIBLE
@@ -389,14 +390,33 @@ class MainActivity : ThemedActivity() {
         (content.parent as? View)?.background = null
     }
 
+    private fun genreShort(g: Genre) = when (g) {
+        Genre.HEIRMOLOGIC -> R.string.genre_heirm_short
+        Genre.PAPADIC -> R.string.genre_pap_short
+        else -> R.string.genre_stich_short
+    }
+
+    /**
+     * The scale list, with the melody genre (heirmologic / sticheraric / papadic) as a switch at
+     * the top: it applies at once, so a chanter can change genre in one tap without leaving the mode.
+     */
     private fun pickScale() {
         val names = Catalog.visibleList(prefs.european)
+        val d = resources.displayMetrics.density
+        val head = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, (4 * d).toInt()) }
+        val genres = Genre.entries
+        Kit(this, palette).segmentedRow(head, getString(R.string.genre), null,
+            listOf(getString(R.string.genre_heirm_tab), getString(R.string.genre_stich_tab), getString(R.string.genre_pap_tab)),
+            genres.indexOf(prefs.genre)) { i ->
+            prefs.genreName = genres[i].name
+            applySettings()
+        }
         dialog()
-            .setTitle(R.string.scale)
-            .setSingleChoiceItems(names.toTypedArray(), names.indexOf(prefs.scale).coerceAtLeast(0)) { d, which ->
+            .setCustomTitle(head)
+            .setSingleChoiceItems(names.toTypedArray(), names.indexOf(prefs.scale).coerceAtLeast(0)) { dlg, which ->
                 prefs.scale = names[which]
                 applySettings()
-                d.dismiss()
+                dlg.dismiss()
             }
             .show().also { style(it) }
     }

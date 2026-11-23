@@ -39,6 +39,11 @@ class SettingsActivity : AppCompatActivity() {
         prefs = Prefs(this)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         build()
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            // Debug builds: `--ei scrollTo <dp>` on the main screen's intent is passed on here.
+            val y = intent.getIntExtra("scrollTo", 0)
+            if (y > 0) root.post { (root.parent as ScrollView).scrollTo(0, px(y)) }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

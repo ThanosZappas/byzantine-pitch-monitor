@@ -100,6 +100,41 @@ class MainActivity : AppCompatActivity() {
         btnRecord.setOnClickListener { record() }
         btnStop.setOnClickListener { stopAll() }
         btnPlay.setOnClickListener { play() }
+        debugExtras()
+    }
+
+    /**
+     * Debug builds only: lets screens be checked over adb on phones that block simulated taps.
+     * `--es scale "Ήχος Α'"`, `--ez demo true` (a synthetic voice instead of the microphone),
+     * `--es open settings|recordings`.
+     */
+    private var demo = false
+
+    private fun debugExtras() {
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return
+        intent.getStringExtra("scale")?.let { if (Catalog.ORDERED.contains(it)) prefs.scale = it }
+        demo = intent.getBooleanExtra("demo", false)
+        if (demo) Thread({ demoVoice() }, "demo-voice").start()
+        when (intent.getStringExtra("open")) {
+            "settings" -> openSettings()
+            "recordings" -> openRecordings()
+        }
+    }
+
+    /** A voice holding Pa with vibrato, sliding through Vou and Ga, with short breaths. */
+    private fun demoVoice() {
+        val pa = Byzantine.niCents(prefs.niOffset, prefs.a4) + 12 * Pitch.CENTS_PER_MORIO
+        val notes = doubleArrayOf(0.0, 0.0, 167.0, 300.0, 167.0, 0.0, -200.0, 0.0)
+        var t = 0
+        while (!isDestroyed) {
+            val i = (t / 140) % notes.size
+            val inNote = t % 140
+            val v = if (inNote > 128) Float.NaN
+            else (pa + notes[i] - 40 + 18 * kotlin.math.sin(t / 6.0)).toFloat()
+            liveTrack.add(v)
+            t++
+            Thread.sleep(11)
+        }
     }
 
     override fun onResume() {
@@ -120,7 +155,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startInput() {
-        if (player == null) engine.start()
+        if (player == null && !demo) engine.start()
     }
 
     // --- settings -----------------------------------------------------------------------
@@ -148,7 +183,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openSettings() {
-        settingsResult.launch(Intent(this, SettingsActivity::class.java))
+        settingsResult.launch(Intent(this, SettingsActivity::class.java).putExtra("scrollTo", intent.getIntExtra("scrollTo", 0)))
     }
 
     private fun pickScale() {

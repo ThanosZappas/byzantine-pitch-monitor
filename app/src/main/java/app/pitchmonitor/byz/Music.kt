@@ -127,8 +127,10 @@ object Byzantine {
         //  Δ' – Kastanas, Apostoliki Diakonia: heirmologic base Βου (Βου Δι, sometimes Ζω);
         //       sticheraric base Πα (Πα Βου Δι); papadic base Δι (Δι Ζω Βου).
         //  Πλ.Α' – Kastanas, Apostoliki Diakonia: heirmologic base Κε (Κε Νη); sticheraric and papadic Πα (Πα Δι Κε).
-        //  Πλ.Β' – Apostoliki Diakonia, Galanis: sticheraric and papadic Πα Δι Κε. (Heirmologic: dominants
-        //          Βου Δι but no base stated, so not offered.)
+        //  Πλ.Β' – Apostoliki Diakonia, Galanis: sticheraric and papadic Πα Δι Κε; heirmologic Βου Δι
+        //          (Galanis) on base Πα (confirmed by the owner).
+        //  Βαρύς διατονικός – Kastanas, Kyriazis: base low Ζω (natural), diatonic; dominants Ζω Πα Γα
+        //          (Galanis; the University of Macedonia thesis adds Δι).
         //  Β' (Δι Βου), Γ' (Γα Κε Πα), Βαρύς (Γα Δι Ζω), Πλ.Δ' (Νη Βου Δι) – Kastanas, no genre split.
         //  Πλ.Δ' εκ του Γα (Γα Δι Ζω) – Galanis.
         ByzMode("Ήχος Α'", "First Mode", Genus.DIATONIC_NI, Variant(PA, PA, GA), mapOf(
@@ -140,8 +142,9 @@ object Byzantine {
         ByzMode("Ήχος Πλ.Α'", "Plagal First Mode", Genus.DIATONIC_NI, Variant(PA, PA, DI, KE), mapOf(
             Genre.HEIRMOLOGIC to Variant(KE, KE, NI), Genre.STICHERARIC to Variant(PA, PA, DI, KE), Genre.PAPADIC to Variant(PA, PA, DI, KE))),
         ByzMode("Ήχος Πλ.Β'", "Plagal Second Mode", Genus.HARD_CHROMATIC_PA, Variant(PA, PA, DI, KE), mapOf(
-            Genre.STICHERARIC to Variant(PA, PA, DI, KE), Genre.PAPADIC to Variant(PA, PA, DI, KE))),
+            Genre.HEIRMOLOGIC to Variant(PA, VOU, DI), Genre.STICHERARIC to Variant(PA, PA, DI, KE), Genre.PAPADIC to Variant(PA, PA, DI, KE))),
         ByzMode("Ήχος Βαρύς", "Grave Mode", Genus.ENHARMONIC_GA, Variant(GA, GA, DI, ZO)),
+        ByzMode("Ήχος Βαρύς Διατονικός", "Grave Mode (diatonic)", Genus.DIATONIC_NI, Variant(ZO, ZO, PA, GA)),
         ByzMode("Ήχος Πλ.Δ'", "Plagal Fourth Mode", Genus.DIATONIC_NI, Variant(NI, NI, VOU, DI)),
         ByzMode("Ήχος Πλ.Δ' εκ του Γα", "Plagal Fourth Mode from Ga", Genus.DIATONIC_GA, Variant(GA, GA, DI, ZO)),
     )

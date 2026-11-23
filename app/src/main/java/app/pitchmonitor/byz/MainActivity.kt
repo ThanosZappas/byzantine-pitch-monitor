@@ -406,8 +406,9 @@ class MainActivity : ThemedActivity() {
     }
 
     /**
-     * The scale list. Modes whose melody genres differ (per the sources) show a chip for each genre,
-     * so one tap picks mode and genre together; the tick marks exactly the scale in use.
+     * The scale list with three tabs: Ειρμολογικό / Στιχηραρικό / Παπαδικό. A tab only changes the
+     * list; tapping a scale applies it with that tab's genre. The tick marks the scale in use only
+     * on its own genre's tab (modes without genre forms are the same on every tab).
      */
     private fun pickScale() {
         val p = palette
@@ -415,56 +416,56 @@ class MainActivity : ThemedActivity() {
         val d = resources.displayMetrics.density
         fun px(v: Float) = (v * d).toInt()
         val names = Catalog.visibleList(prefs.european)
+        val genres = Genre.entries
         val currentGenre = Byzantine.mode(prefs.scale)?.genreFor(prefs.genre)
-        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), 0, px(8f), px(8f)) }
-        lateinit var dlg: androidx.appcompat.app.AlertDialog
-        fun choose(name: String, genre: Genre?) {
-            prefs.scale = name
-            if (genre != null) prefs.genreName = genre.name
-            applySettings()
-            dlg.dismiss()
-        }
-        var selectedRow: View? = null
-        for (name in names) {
-            val mode = Byzantine.mode(name)
-            val isCurrent = name == prefs.scale
-            val row = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(px(12f), px(10f), px(12f), px(10f))
-                background = android.graphics.drawable.RippleDrawable(
-                    android.content.res.ColorStateList.valueOf(Colors.alpha(p.onSurface, 0.12f)),
-                    if (isCurrent) p.rounded(p.secondaryContainer, 16f, d) else null, p.mask(16f, d))
-            }
-            val head = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER_VERTICAL }
-            head.addView(kit.icon(R.drawable.ic_check, if (isCurrent) p.onSecondaryContainer else 0).apply {
-                visibility = if (isCurrent) View.VISIBLE else View.INVISIBLE
-            }, LinearLayout.LayoutParams(px(20f), px(20f)).apply { marginEnd = px(12f) })
-            head.addView(kit.titleText(Catalog.displayName(name, english)).apply {
-                setTextColor(if (isCurrent) p.onSecondaryContainer else p.onSurface)
-            })
-            row.addView(head)
-            val genres = mode?.genres?.keys?.sortedBy { it.ordinal }.orEmpty()
-            if (genres.isNotEmpty()) {
-                val chips = com.google.android.material.chip.ChipGroup(this).apply { chipSpacingHorizontal = px(6f); setPadding(px(32f), px(4f), 0, 0) }
-                for (g in genres) {
-                    chips.addView(kit.chip(genreName(g)).apply {
-                        isChecked = isCurrent && g == currentGenre
-                        setOnClickListener { choose(name, g) }
-                    })
-                }
-                row.addView(chips)
-                row.setOnClickListener { choose(name, mode?.genreFor(prefs.genre)) }
-            } else {
-                row.setOnClickListener { choose(name, null) }
-            }
-            row.contentDescription = Catalog.displayName(name, english) + if (isCurrent) " ✓" else ""
-            list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = px(2f) })
-            if (isCurrent) selectedRow = row
-        }
+        var tab = currentGenre ?: prefs.genre
+        val head = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), px(4f), px(8f), 0) }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), px(4f), px(8f), px(8f)) }
         val scroll = android.widget.ScrollView(this).apply { addView(list) }
-        dlg = dialog().setTitle(R.string.scale).setView(scroll).setNegativeButton(android.R.string.cancel, null).show()
+        lateinit var dlg: androidx.appcompat.app.AlertDialog
+
+        fun fill() {
+            list.removeAllViews()
+            var selectedRow: View? = null
+            for (name in names) {
+                val mode = Byzantine.mode(name)
+                val hasGenres = !mode?.genres.isNullOrEmpty()
+                val isCurrent = name == prefs.scale && (!hasGenres || currentGenre == tab)
+                val row = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = android.view.Gravity.CENTER_VERTICAL
+                    setPadding(px(12f), px(12f), px(12f), px(12f))
+                    background = android.graphics.drawable.RippleDrawable(
+                        android.content.res.ColorStateList.valueOf(Colors.alpha(p.onSurface, 0.12f)),
+                        if (isCurrent) p.rounded(p.secondaryContainer, 16f, d) else null, p.mask(16f, d))
+                    contentDescription = Catalog.displayName(name, english) + if (isCurrent) " ✓" else ""
+                    setOnClickListener {
+                        prefs.scale = name
+                        if (hasGenres) prefs.genreName = tab.name
+                        applySettings()
+                        dlg.dismiss()
+                    }
+                }
+                row.addView(kit.icon(R.drawable.ic_check, p.onSecondaryContainer).apply {
+                    visibility = if (isCurrent) View.VISIBLE else View.INVISIBLE
+                }, LinearLayout.LayoutParams(px(20f), px(20f)).apply { marginEnd = px(12f) })
+                row.addView(kit.titleText(Catalog.displayName(name, english)).apply {
+                    setTextColor(if (isCurrent) p.onSecondaryContainer else p.onSurface)
+                })
+                list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = px(2f) })
+                if (isCurrent) selectedRow = row
+            }
+            selectedRow?.let { r -> scroll.post { scroll.scrollTo(0, (r.top - px(80f)).coerceAtLeast(0)) } }
+        }
+
+        kit.segmentedRow(head, getString(R.string.genre), null, genres.map { genreName(it) }, genres.indexOf(tab)) { i ->
+            tab = genres[i]
+            fill()
+        }
+        fill()
+        val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; addView(head); addView(scroll) }
+        dlg = dialog().setTitle(R.string.scale).setView(box).setNegativeButton(android.R.string.cancel, null).show()
         style(dlg)
-        selectedRow?.let { r -> scroll.post { scroll.scrollTo(0, (r.top - px(80f)).coerceAtLeast(0)) } }
     }
 
     // --- base (Ni) ------------------------------------------------------------------------

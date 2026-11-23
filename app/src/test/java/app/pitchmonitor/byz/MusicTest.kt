@@ -36,8 +36,11 @@ class MusicTest {
         // Only sourced genres are offered.
         assertNull(g3.genreFor(Genre.HEIRMOLOGIC))
         val pl2 = Byzantine.mode("Ήχος Πλ.Β'")!!
-        assertEquals(setOf(Genre.STICHERARIC, Genre.PAPADIC), pl2.genres.keys)
-        assertEquals(Genre.STICHERARIC, pl2.genreFor(Genre.HEIRMOLOGIC))
+        assertEquals(Genre.entries.toSet(), pl2.genres.keys)
+        assertEquals(Byzantine.PA, pl2.baseFor(Genre.HEIRMOLOGIC))
+        val gd = Byzantine.mode("Ήχος Βαρύς Διατονικός")!!
+        assertEquals(Byzantine.ZO, gd.base)
+        assertArrayEquals(intArrayOf(0, 12, 22, 30, 42, 54, 64), gd.genus.positions)
         assertEquals("Plagal Fourth Mode", Catalog.displayName("Ήχος Πλ.Δ'", english = true))
         assertEquals("Ήχος Πλ.Δ'", Catalog.displayName("Ήχος Πλ.Δ'", english = false))
     }
@@ -55,14 +58,15 @@ class MusicTest {
         val o = Catalog.ORDERED
         assertEquals("C Major", o[0])
         assertEquals("Ήχος Α'", o[1])
-        assertEquals("Ήχος Πλ.Δ' εκ του Γα", o[9])
-        assertEquals("C Minor", o[10])
+        assertEquals("Ήχος Πλ.Δ' εκ του Γα", o[10])
+        assertEquals("Ήχος Βαρύς Διατονικός", o[8])
+        assertEquals("C Minor", o[11])
         assertEquals("Chromatic", o.last())
-        assertEquals(40, o.size)
+        assertEquals(41, o.size)
     }
 
     @Test fun europeanFilter() {
-        assertEquals(40, Catalog.visibleList(Catalog.EU_ALL).size)
+        assertEquals(41, Catalog.visibleList(Catalog.EU_ALL).size)
         assertEquals(listOf("C Major") + Byzantine.MODES.map { it.title }, Catalog.visibleList(Catalog.EU_C_MAJOR))
         assertEquals(Byzantine.MODES.map { it.title }, Catalog.visibleList(Catalog.EU_NONE))
     }

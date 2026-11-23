@@ -156,7 +156,7 @@ class Kit(private val a: ThemedActivity, private val p: Palette) {
     }
 
     /** Title + description + a row of joined buttons (one selected). Best for 2–4 short options. */
-    fun segmentedRow(card: LinearLayout, title: CharSequence, desc: CharSequence?, options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    fun segmentedRow(card: LinearLayout, title: CharSequence, desc: CharSequence?, options: List<String>, selected: Int, onSelect: (Int) -> Unit): MaterialButtonToggleGroup {
         val box = rowBox(vertical = true)
         box.addView(texts(title, desc))
         val group = MaterialButtonToggleGroup(a).apply { isSingleSelection = true; isSelectionRequired = true }
@@ -173,13 +173,18 @@ class Kit(private val a: ThemedActivity, private val p: Palette) {
                 strokeColor = ColorStateList.valueOf(p.outline)
                 rippleColor = ColorStateList.valueOf(Colors.alpha(p.onSurface, 0.12f))
                 isCheckable = true
-                group.addView(this, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f))
+                // Whole words on one line: long labels shrink a little instead of being cut.
+                maxLines = 1
+                setPadding(px(4f), paddingTop, px(4f), paddingBottom)
+                setAutoSizeTextTypeUniformWithConfiguration(10, 14, 1, android.util.TypedValue.COMPLEX_UNIT_SP)
+                group.addView(this, LinearLayout.LayoutParams(0, px(44f), 1f))
             }.id
         }
         if (selected in ids.indices) group.check(ids[selected])
         group.addOnButtonCheckedListener { _, id, isChecked -> if (isChecked) ids.indexOf(id).takeIf { it >= 0 }?.let(onSelect) }
         box.addView(group, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { topMargin = px(10f) })
         card.addView(box)
+        return group
     }
 
     /** Title + description + wrapping choice chips (one selected); [selected] -1 = none. */

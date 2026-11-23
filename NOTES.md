@@ -115,9 +115,9 @@ predictive back animation, the email button.
 
 - Only the **base** line has its own colour; with **Highlight dominant notes** (Appearance, on by
   default) the δεσπόζοντες are tinted and a little thicker.
-- **Melody genre** is part of the scale: in the scale picker, modes whose genres differ show a chip
-  per genre (Ειρμολογικό / Στιχηραρικό / Παπαδικό); one tap picks mode and genre, and the tick marks
-  exactly the one in use. Only genres a source states are offered.
+- **Melody genre** is part of the scale: the scale picker has three tabs (Ειρμολογικό / Στιχηραρικό /
+  Παπαδικό). A tab only changes the list; tapping a scale applies it with that genre, and the tick
+  shows only on the genre in use. Only genres a source states are offered.
 - Mode names are shown in English when the app is in English (First Mode … Plagal Fourth Mode,
   Grave Mode), as in Greek Orthodox English usage (Sanidopoulos, Kastanas).
 
@@ -128,8 +128,9 @@ predictive back animation, the email button.
 | Γ' | — | — | — | Γα: Γα Κε Πα, no genre split (Kastanas) |
 | Δ' | Βου: Βου Δι Ζω | Πα: Πα Βου Δι | Δι: Δι Ζω Βου | Kastanas, Apostoliki Diakonia |
 | Πλ.Α' | Κε: Κε Νη | Πα: Πα Δι Κε | Πα: Πα Δι Κε | Kastanas, Apostoliki Diakonia |
-| Πλ.Β' | not offered (no base stated) | Πα: Πα Δι Κε | Πα: Πα Δι Κε | Apostoliki Diakonia, Galanis |
+| Πλ.Β' | Πα: Βου Δι | Πα: Πα Δι Κε | Πα: Πα Δι Κε | Apostoliki Diakonia, Galanis; heirmologic base Πα confirmed by the owner |
 | Βαρύς | — | — | — | Γα: Γα Δι Ζω, no genre split (Kastanas) |
+| Βαρύς Διατονικός | — | — | — | low Ζω, diatonic (Kastanas, Kyriazis); dominants Ζω Πα Γα (Galanis; UoM thesis adds Δι) |
 | Πλ.Δ' | — | — | — | Νη: Νη Βου Δι, same in all genres (Kastanas, Apostoliki Diakonia) |
 | Πλ.Δ' εκ του Γα | — | — | — | Γα: Γα Δι Ζω (Galanis) |
 

@@ -85,19 +85,31 @@ enum class Genre { HEIRMOLOGIC, STICHERARIC, PAPADIC }
 /** Base note and dominant notes (δεσπόζοντες) of a mode in one genre. */
 class Variant(val base: Int, vararg val dominants: Int)
 
-/** A mode: its genus, and its base and dominants per genre (heirmologic/papadic default to sticheraric). */
+/**
+ * A mode: its genus, its base and dominants, and — only where a source states them — different
+ * values per melody genre. Modes without [genres] have no genre choice.
+ */
 class ByzMode(
     val title: String,
+    /** English name ("First Mode", "Plagal Fourth Mode"…). */
+    val english: String,
     val genus: Genus,
-    private val stich: Variant,
-    private val heirm: Variant = stich,
-    private val pap: Variant = stich,
+    private val general: Variant,
+    val genres: Map<Genre, Variant> = emptyMap(),
 ) {
-    fun variant(g: Genre) = when (g) { Genre.HEIRMOLOGIC -> heirm; Genre.PAPADIC -> pap; else -> stich }
+    /** The genre in effect: [wanted] if this mode has it, its sticheraric form if it has genres, else none. */
+    fun genreFor(wanted: Genre): Genre? = when {
+        genres.isEmpty() -> null
+        wanted in genres -> wanted
+        Genre.STICHERARIC in genres -> Genre.STICHERARIC
+        else -> genres.keys.first()
+    }
+
+    fun variant(g: Genre): Variant = genreFor(g)?.let { genres.getValue(it) } ?: general
     fun baseFor(g: Genre) = variant(g).base
     fun dominantsFor(g: Genre): IntArray = variant(g).dominants
-    val base: Int get() = stich.base
-    val dominants: IntArray get() = stich.dominants
+    val base: Int get() = general.base
+    val dominants: IntArray get() = general.dominants
 }
 
 object Byzantine {
@@ -110,23 +122,28 @@ object Byzantine {
     const val NI_NATURAL_HZ = 261.6255653
 
     val MODES = listOf(
-        // Sources: N. Kastanas, "Byzantine Music Simplified" (all modes; genre splits for Α', Πλ.Α', Δ');
-        // Apostoliki Diakonia "Οι ήχοι" (Α', Δ', Πλ.Α', Πλ.Β', Πλ.Δ'); IEMA thesaurus (Α');
-        // University of Macedonia thesis (Β' papadic); P. Galanis (Πλ.Β', Πλ.Δ' εκ του Γα).
-        ByzMode("Ήχος Α'", Genus.DIATONIC_NI,
-            stich = Variant(PA, PA, GA), heirm = Variant(PA, PA, DI), pap = Variant(PA, PA, GA)),
-        ByzMode("Ήχος Β'", Genus.SOFT_CHROMATIC_NI,
-            stich = Variant(DI, DI, VOU), pap = Variant(DI, DI, ZO, VOU)),
-        ByzMode("Ήχος Γ'", Genus.ENHARMONIC_GA, stich = Variant(GA, GA, KE, PA)),
-        ByzMode("Ήχος Δ'", Genus.DIATONIC_NI,
-            stich = Variant(PA, PA, VOU, DI), heirm = Variant(VOU, VOU, DI, ZO), pap = Variant(DI, DI, ZO, VOU)),
-        ByzMode("Ήχος Πλ.Α'", Genus.DIATONIC_NI,
-            stich = Variant(PA, PA, DI, KE), heirm = Variant(KE, KE, NI), pap = Variant(PA, PA, DI, KE)),
-        ByzMode("Ήχος Πλ.Β'", Genus.HARD_CHROMATIC_PA,
-            stich = Variant(PA, PA, DI, KE), heirm = Variant(PA, VOU, DI), pap = Variant(PA, PA, DI, KE)),
-        ByzMode("Ήχος Βαρύς", Genus.ENHARMONIC_GA, stich = Variant(GA, GA, DI, ZO)),
-        ByzMode("Ήχος Πλ.Δ'", Genus.DIATONIC_NI, stich = Variant(NI, NI, VOU, DI)),
-        ByzMode("Ήχος Πλ.Δ' εκ του Γα", Genus.DIATONIC_GA, stich = Variant(GA, GA, DI, ZO)),
+        // Only values a source states. Genre forms only where a source distinguishes them:
+        //  Α' – Kastanas, IEMA: heirmologic Πα Δι; sticheraric and papadic Πα Γα.
+        //  Δ' – Kastanas, Apostoliki Diakonia: heirmologic base Βου (Βου Δι, sometimes Ζω);
+        //       sticheraric base Πα (Πα Βου Δι); papadic base Δι (Δι Ζω Βου).
+        //  Πλ.Α' – Kastanas, Apostoliki Diakonia: heirmologic base Κε (Κε Νη); sticheraric and papadic Πα (Πα Δι Κε).
+        //  Πλ.Β' – Apostoliki Diakonia, Galanis: sticheraric and papadic Πα Δι Κε. (Heirmologic: dominants
+        //          Βου Δι but no base stated, so not offered.)
+        //  Β' (Δι Βου), Γ' (Γα Κε Πα), Βαρύς (Γα Δι Ζω), Πλ.Δ' (Νη Βου Δι) – Kastanas, no genre split.
+        //  Πλ.Δ' εκ του Γα (Γα Δι Ζω) – Galanis.
+        ByzMode("Ήχος Α'", "First Mode", Genus.DIATONIC_NI, Variant(PA, PA, GA), mapOf(
+            Genre.HEIRMOLOGIC to Variant(PA, PA, DI), Genre.STICHERARIC to Variant(PA, PA, GA), Genre.PAPADIC to Variant(PA, PA, GA))),
+        ByzMode("Ήχος Β'", "Second Mode", Genus.SOFT_CHROMATIC_NI, Variant(DI, DI, VOU)),
+        ByzMode("Ήχος Γ'", "Third Mode", Genus.ENHARMONIC_GA, Variant(GA, GA, KE, PA)),
+        ByzMode("Ήχος Δ'", "Fourth Mode", Genus.DIATONIC_NI, Variant(PA, PA, VOU, DI), mapOf(
+            Genre.HEIRMOLOGIC to Variant(VOU, VOU, DI, ZO), Genre.STICHERARIC to Variant(PA, PA, VOU, DI), Genre.PAPADIC to Variant(DI, DI, ZO, VOU))),
+        ByzMode("Ήχος Πλ.Α'", "Plagal First Mode", Genus.DIATONIC_NI, Variant(PA, PA, DI, KE), mapOf(
+            Genre.HEIRMOLOGIC to Variant(KE, KE, NI), Genre.STICHERARIC to Variant(PA, PA, DI, KE), Genre.PAPADIC to Variant(PA, PA, DI, KE))),
+        ByzMode("Ήχος Πλ.Β'", "Plagal Second Mode", Genus.HARD_CHROMATIC_PA, Variant(PA, PA, DI, KE), mapOf(
+            Genre.STICHERARIC to Variant(PA, PA, DI, KE), Genre.PAPADIC to Variant(PA, PA, DI, KE))),
+        ByzMode("Ήχος Βαρύς", "Grave Mode", Genus.ENHARMONIC_GA, Variant(GA, GA, DI, ZO)),
+        ByzMode("Ήχος Πλ.Δ'", "Plagal Fourth Mode", Genus.DIATONIC_NI, Variant(NI, NI, VOU, DI)),
+        ByzMode("Ήχος Πλ.Δ' εκ του Γα", "Plagal Fourth Mode from Ga", Genus.DIATONIC_GA, Variant(GA, GA, DI, ZO)),
     )
 
     fun mode(title: String): ByzMode? = MODES.firstOrNull { it.title == title }
@@ -333,6 +350,10 @@ object Catalog {
         listOf(C_MAJOR) + Byzantine.MODES.map { it.title } + WesternScale.ALL.map { it.title }.filter { it != C_MAJOR }
 
     fun isByzantine(name: String) = Byzantine.mode(name) != null
+
+    /** Name to show: Byzantine modes in English when the app is in English; other scales as they are. */
+    fun displayName(name: String, english: Boolean): String =
+        if (english) Byzantine.mode(name)?.english ?: name else name
 
     fun visible(name: String, european: String): Boolean = when (european) {
         EU_NONE -> isByzantine(name)

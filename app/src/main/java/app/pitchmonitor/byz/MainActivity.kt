@@ -198,7 +198,7 @@ class MainActivity : ThemedActivity() {
             showTuner = prefs.showTuner, showHz = prefs.showHz, smoothing = prefs.smoothing,
             autoScroll = prefs.autoScroll, scrollSpeed = prefs.scrollSpeed,
         )
-        btnScale.text = if (Catalog.isByzantine(prefs.scale)) prefs.scale + "\n" + getString(genreShort(prefs.genre)) else prefs.scale
+        btnScale.text = scaleLabel()
         btnScale.visibility = if (prefs.showScale) View.VISIBLE else View.INVISIBLE
         btnHold.visibility = if (prefs.showHold) View.VISIBLE else View.GONE
         transport.visibility = if (prefs.hideTransport) View.GONE else View.VISIBLE
@@ -390,35 +390,81 @@ class MainActivity : ThemedActivity() {
         (content.parent as? View)?.background = null
     }
 
-    private fun genreShort(g: Genre) = when (g) {
-        Genre.HEIRMOLOGIC -> R.string.genre_heirm_short
-        Genre.PAPADIC -> R.string.genre_pap_short
-        else -> R.string.genre_stich_short
+    private fun genreName(g: Genre) = getString(when (g) {
+        Genre.HEIRMOLOGIC -> R.string.genre_heirmologic
+        Genre.PAPADIC -> R.string.genre_papadic
+        else -> R.string.genre_sticheraric
+    })
+
+    private val english get() = prefs.language == Lang.EN
+
+    /** Text of the scale button: the mode (in English when the app is) and its genre, if it has one. */
+    private fun scaleLabel(): String {
+        val name = Catalog.displayName(prefs.scale, english)
+        val genre = Byzantine.mode(prefs.scale)?.genreFor(prefs.genre) ?: return name
+        return name + "\n" + genreName(genre)
     }
 
     /**
-     * The scale list, with the melody genre (heirmologic / sticheraric / papadic) as a switch at
-     * the top: it applies at once, so a chanter can change genre in one tap without leaving the mode.
+     * The scale list. Modes whose melody genres differ (per the sources) show a chip for each genre,
+     * so one tap picks mode and genre together; the tick marks exactly the scale in use.
      */
     private fun pickScale() {
-        val names = Catalog.visibleList(prefs.european)
+        val p = palette
+        val kit = Kit(this, p)
         val d = resources.displayMetrics.density
-        val head = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(0, 0, 0, (4 * d).toInt()) }
-        val genres = Genre.entries
-        Kit(this, palette).segmentedRow(head, getString(R.string.genre), null,
-            listOf(getString(R.string.genre_heirm_tab), getString(R.string.genre_stich_tab), getString(R.string.genre_pap_tab)),
-            genres.indexOf(prefs.genre)) { i ->
-            prefs.genreName = genres[i].name
+        fun px(v: Float) = (v * d).toInt()
+        val names = Catalog.visibleList(prefs.european)
+        val currentGenre = Byzantine.mode(prefs.scale)?.genreFor(prefs.genre)
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(px(8f), 0, px(8f), px(8f)) }
+        lateinit var dlg: androidx.appcompat.app.AlertDialog
+        fun choose(name: String, genre: Genre?) {
+            prefs.scale = name
+            if (genre != null) prefs.genreName = genre.name
             applySettings()
+            dlg.dismiss()
         }
-        dialog()
-            .setCustomTitle(head)
-            .setSingleChoiceItems(names.toTypedArray(), names.indexOf(prefs.scale).coerceAtLeast(0)) { dlg, which ->
-                prefs.scale = names[which]
-                applySettings()
-                dlg.dismiss()
+        var selectedRow: View? = null
+        for (name in names) {
+            val mode = Byzantine.mode(name)
+            val isCurrent = name == prefs.scale
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(px(12f), px(10f), px(12f), px(10f))
+                background = android.graphics.drawable.RippleDrawable(
+                    android.content.res.ColorStateList.valueOf(Colors.alpha(p.onSurface, 0.12f)),
+                    if (isCurrent) p.rounded(p.secondaryContainer, 16f, d) else null, p.mask(16f, d))
             }
-            .show().also { style(it) }
+            val head = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL; gravity = android.view.Gravity.CENTER_VERTICAL }
+            head.addView(kit.icon(R.drawable.ic_check, if (isCurrent) p.onSecondaryContainer else 0).apply {
+                visibility = if (isCurrent) View.VISIBLE else View.INVISIBLE
+            }, LinearLayout.LayoutParams(px(20f), px(20f)).apply { marginEnd = px(12f) })
+            head.addView(kit.titleText(Catalog.displayName(name, english)).apply {
+                setTextColor(if (isCurrent) p.onSecondaryContainer else p.onSurface)
+            })
+            row.addView(head)
+            val genres = mode?.genres?.keys?.sortedBy { it.ordinal }.orEmpty()
+            if (genres.isNotEmpty()) {
+                val chips = com.google.android.material.chip.ChipGroup(this).apply { chipSpacingHorizontal = px(6f); setPadding(px(32f), px(4f), 0, 0) }
+                for (g in genres) {
+                    chips.addView(kit.chip(genreName(g)).apply {
+                        isChecked = isCurrent && g == currentGenre
+                        setOnClickListener { choose(name, g) }
+                    })
+                }
+                row.addView(chips)
+                row.setOnClickListener { choose(name, mode?.genreFor(prefs.genre)) }
+            } else {
+                row.setOnClickListener { choose(name, null) }
+            }
+            row.contentDescription = Catalog.displayName(name, english) + if (isCurrent) " ✓" else ""
+            list.addView(row, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { bottomMargin = px(2f) })
+            if (isCurrent) selectedRow = row
+        }
+        val scroll = android.widget.ScrollView(this).apply { addView(list) }
+        dlg = dialog().setTitle(R.string.scale).setView(scroll).setNegativeButton(android.R.string.cancel, null).show()
+        style(dlg)
+        selectedRow?.let { r -> scroll.post { scroll.scrollTo(0, (r.top - px(80f)).coerceAtLeast(0)) } }
     }
 
     // --- base (Ni) ------------------------------------------------------------------------

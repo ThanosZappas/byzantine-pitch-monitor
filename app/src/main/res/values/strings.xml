@@ -198,10 +198,4 @@
     <string name="highlight_dominants">Highlight dominant notes</string>
     <string name="highlight_dominants_desc">Tint the δεσπόζοντες of the selected mode a little. Off: only the base stands out.</string>
     <string name="genre_papadic">Papadic</string>
-    <string name="genre_heirm_short">Heirmologic</string>
-    <string name="genre_stich_short">Sticheraric</string>
-    <string name="genre_pap_short">Papadic</string>
-    <string name="genre_heirm_tab">Heirm.</string>
-    <string name="genre_stich_tab">Stich.</string>
-    <string name="genre_pap_tab">Papadic</string>
 </resources>

@@ -115,25 +115,23 @@ predictive back animation, the email button.
 
 - Only the **base** line has its own colour; with **Highlight dominant notes** (Appearance, on by
   default) the δεσπόζοντες are tinted and a little thicker.
-- **Melody genre** is chosen in the scale picker on the main screen (Ειρμολ. / Στιχηρ. / Παπαδ.); it
-  applies at once and is shown under the mode name on the scale button.
+- **Melody genre** is part of the scale: in the scale picker, modes whose genres differ show a chip
+  per genre (Ειρμολογικό / Στιχηραρικό / Παπαδικό); one tap picks mode and genre, and the tick marks
+  exactly the one in use. Only genres a source states are offered.
+- Mode names are shown in English when the app is in English (First Mode … Plagal Fourth Mode,
+  Grave Mode), as in Greek Orthodox English usage (Sanidopoulos, Kastanas).
 
-| Mode | Heirmologic | Sticheraric | Papadic |
-| --- | --- | --- | --- |
-| Α' | Πα: Πα Δι | Πα: Πα Γα | Πα: Πα Γα |
-| Β' | Δι: Δι Βου | Δι: Δι Βου | Δι: Δι Ζω Βου |
-| Γ' | Γα: Γα Κε Πα | same | same |
-| Δ' | Βου: Βου Δι Ζω | Πα: Πα Βου Δι | Δι: Δι Ζω Βου |
-| Πλ.Α' | Κε: Κε Νη | Πα: Πα Δι Κε | Πα: Πα Δι Κε |
-| Πλ.Β' | Πα: Βου Δι | Πα: Πα Δι Κε | Πα: Πα Δι Κε |
-| Βαρύς | Γα: Γα Δι Ζω | same | same (diatonic papadic form not modelled) |
-| Πλ.Δ' | Νη: Νη Βου Δι | same | same |
-| Πλ.Δ' εκ του Γα | Γα: Γα Δι Ζω | same | same |
-
-  Sources: N. Kastanas, *Byzantine Music Simplified* (all modes; genre splits for Α', Πλ.Α', Δ');
-  Apostoliki Diakonia, "Οι ήχοι"; IEMA thesaurus (Α'); University of Macedonia thesis (Β' papadic);
-  P. Galanis (Πλ.Β' heirmologic, Πλ.Δ' εκ του Γα). Where a source gives no genre split, the same
-  values are used for all three genres.
+| Mode | Heirmologic | Sticheraric | Papadic | Source |
+| --- | --- | --- | --- | --- |
+| Α' | Πα: Πα Δι | Πα: Πα Γα | Πα: Πα Γα | Kastanas, IEMA |
+| Β' | — | — | — | Δι: Δι Βου, no genre split (Kastanas) |
+| Γ' | — | — | — | Γα: Γα Κε Πα, no genre split (Kastanas) |
+| Δ' | Βου: Βου Δι Ζω | Πα: Πα Βου Δι | Δι: Δι Ζω Βου | Kastanas, Apostoliki Diakonia |
+| Πλ.Α' | Κε: Κε Νη | Πα: Πα Δι Κε | Πα: Πα Δι Κε | Kastanas, Apostoliki Diakonia |
+| Πλ.Β' | not offered (no base stated) | Πα: Πα Δι Κε | Πα: Πα Δι Κε | Apostoliki Diakonia, Galanis |
+| Βαρύς | — | — | — | Γα: Γα Δι Ζω, no genre split (Kastanas) |
+| Πλ.Δ' | — | — | — | Νη: Νη Βου Δι, same in all genres (Kastanas, Apostoliki Diakonia) |
+| Πλ.Δ' εκ του Γα | — | — | — | Γα: Γα Δι Ζω (Galanis) |
 
 ## Verification (Xiaomi M2007J3SG, MIUI, 2026-11-23)
 

@@ -3,6 +3,7 @@ package app.pitchmonitor.byz
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.PI
@@ -32,6 +33,13 @@ class MusicTest {
         assertArrayEquals(intArrayOf(Byzantine.GA, Byzantine.KE, Byzantine.PA), g3.dominants)
         assertEquals(Byzantine.DI, d4.baseFor(Genre.PAPADIC))
         assertEquals(Byzantine.KE, Byzantine.mode("Ήχος Πλ.Α'")!!.baseFor(Genre.HEIRMOLOGIC))
+        // Only sourced genres are offered.
+        assertNull(g3.genreFor(Genre.HEIRMOLOGIC))
+        val pl2 = Byzantine.mode("Ήχος Πλ.Β'")!!
+        assertEquals(setOf(Genre.STICHERARIC, Genre.PAPADIC), pl2.genres.keys)
+        assertEquals(Genre.STICHERARIC, pl2.genreFor(Genre.HEIRMOLOGIC))
+        assertEquals("Plagal Fourth Mode", Catalog.displayName("Ήχος Πλ.Δ'", english = true))
+        assertEquals("Ήχος Πλ.Δ'", Catalog.displayName("Ήχος Πλ.Δ'", english = false))
     }
 
     @Test fun onlyBaseStandsOutByDefault() {
